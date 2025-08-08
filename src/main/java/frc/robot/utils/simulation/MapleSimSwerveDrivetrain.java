@@ -248,18 +248,18 @@ public class MapleSimSwerveDrivetrain {
                 .withEncoderInverted(false)
                 // Adjust steer motor PID gains for simulation
                 .withSteerMotorGains(new Slot0Configs()
-                        .withKP(70)
+                        .withKP(100)
                         .withKI(0)
-                        .withKD(4.5)
-                        .withKS(0)
-                        .withKV(1.91)
+                        .withKD(0.5)
+                        .withKS(0.1)
+                        .withKV(1.5)
                         .withKA(0)
                         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign))
-                .withSteerMotorGearRatio(16.0)
+                .withSteerMotorGearRatio(12.1)
                 // Adjust friction voltages
-                .withDriveFrictionVoltage(Volts.of(0.1))
-                .withSteerFrictionVoltage(Volts.of(0.05))
+                .withDriveFrictionVoltage(Volts.of(0.2))
+                .withSteerFrictionVoltage(Volts.of(0.2))
                 // Adjust steer inertia
-                .withSteerInertia(KilogramSquareMeters.of(0.05));
+                .withSteerInertia(KilogramSquareMeters.of(0.01));
     }
 }
