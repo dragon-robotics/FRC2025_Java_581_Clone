@@ -1,5 +1,9 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -10,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import frc.robot.generated.TunerConstants;
 
 public class Constants {
 
@@ -19,6 +24,16 @@ public class Constants {
 
   public static class VisionConstants {
     // Set up 8 pose estimation cameras with their respective names and positions
+    public static final String[] APTAG_CAMERA_NAMES = {
+        "AprilTagPoseEstCameraFL",
+        "AprilTagPoseEstCameraF",
+        "AprilTagPoseEstCameraFR",
+        "AprilTagPoseEstCameraR",
+        "AprilTagPoseEstCameraBR",
+        "AprilTagPoseEstCameraB",
+        "AprilTagPoseEstCameraBL",
+        "AprilTagPoseEstCameraL"
+    };
 
     // Front-Left Camera: Mounted at front-left corner, pointing outward at 45 degrees
     public static final Transform3d APTAG_POSE_EST_CAM_FL_POS = new Transform3d(
@@ -150,4 +165,49 @@ public class Constants {
     public static double LINEAR_STDDEV_MEGATAG2_FACTOR = 0.5; // More stable than full 3D solve
     public static double ANGULAR_STDDEV_MEGATAG2_ANGLE_FACTOR = Double.POSITIVE_INFINITY; // No rotation data available    
   }
+
+  public static class SwerveConstants {
+    // General constants for swerve drive //
+    public static final double HEADING_KP = 3.5;
+    public static final double HEADING_KI = 0;
+    public static final double HEADING_KD = 0.5;
+    public static final double HEADING_TOLERANCE = 0.01;
+
+    public static final double MAX_SPEED_METERS_PER_SECOND = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    public static final double MAX_ANGULAR_RATE_RADIANS_PER_SECOND = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+    public static final double SWERVE_DEADBAND = 0.1;
+
+    // SWERVE MODULE ODOMETRY STANDARD DEVIATIONS //
+    public static final Matrix<N3, N1> ODOMETRY_STD = VecBuilder.fill(0.1, 0.1, 0.1);
+  }
+
+  public static class OperatorConstants {
+    public static final int DRIVER_PORT = 0;
+    public static final int OPERATOR_PORT = 1;
+    public static final int OPERATOR_BUTTON_PORT = 2;
+    public static final int TEST_PORT = 3;
+  }
+  
+  public static class JoystickConstants {
+    // Joystick Analog Axis/Stick //
+    public static final int STICK_LEFT_X = 0;
+    public static final int STICK_LEFT_Y = 1;
+    public static final int TRIGGER_LEFT = 2;
+    public static final int TRIGGER_RIGHT = 3;
+    public static final int STICK_RIGHT_X = 4;
+    public static final int STICK_RIGHT_Y = 5;
+
+    // Joystick Buttons //
+    public static final int BTN_A = 1;
+    public static final int BTN_B = 2;
+    public static final int BTN_X = 3;
+    public static final int BTN_Y = 4;
+    public static final int BUMPER_LEFT = 5;
+    public static final int BUMPER_RIGHT = 6;
+    public static final int BTN_BACK = 7;
+    public static final int BTN_START = 8;
+    public static final int BTN_STICK_LEFT = 9;
+    public static final int BTN_STICK_RIGHT = 10;
+  }  
 }
