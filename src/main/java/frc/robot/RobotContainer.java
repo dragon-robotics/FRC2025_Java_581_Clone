@@ -4,27 +4,21 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.commands.DriveMaintainHeadingCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -55,41 +49,86 @@ public class RobotContainer {
         250,
         SwerveConstants.ODOMETRY_STD,
         VisionConstants.DEFAULT_TAG_STDDEV);
-    m_vision = new VisionSubsystem(
-        m_swerve,
-        m_swerve::addVisionMeasurement,
-        new VisionIOPhotonVisionSim(
-            VisionConstants.APTAG_CAMERA_NAMES[0],
-            VisionConstants.APTAG_POSE_EST_CAM_FL_POS,
-            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
-        new VisionIOPhotonVisionSim(
-            VisionConstants.APTAG_CAMERA_NAMES[1],
-            VisionConstants.APTAG_POSE_EST_CAM_F_POS,
-            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
-        new VisionIOPhotonVisionSim(
-            VisionConstants.APTAG_CAMERA_NAMES[2],
-            VisionConstants.APTAG_POSE_EST_CAM_FR_POS,
-            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
-        new VisionIOPhotonVisionSim(
-            VisionConstants.APTAG_CAMERA_NAMES[3],
-            VisionConstants.APTAG_POSE_EST_CAM_R_POS,
-            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
-        new VisionIOPhotonVisionSim(
-            VisionConstants.APTAG_CAMERA_NAMES[4],
-            VisionConstants.APTAG_POSE_EST_CAM_BR_POS,
-            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
-        new VisionIOPhotonVisionSim(
-            VisionConstants.APTAG_CAMERA_NAMES[5],
-            VisionConstants.APTAG_POSE_EST_CAM_B_POS,
-            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
-        new VisionIOPhotonVisionSim(
-            VisionConstants.APTAG_CAMERA_NAMES[6],
-            VisionConstants.APTAG_POSE_EST_CAM_BL_POS,
-            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
-        new VisionIOPhotonVisionSim(
-            VisionConstants.APTAG_CAMERA_NAMES[7],
-            VisionConstants.APTAG_POSE_EST_CAM_L_POS,
-            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose));
+
+    switch (Constants.CURRENT_MODE) {
+      case REAL:
+        m_vision = new VisionSubsystem(
+            m_swerve,
+            m_swerve::addVisionMeasurement,
+            new VisionIOPhotonVision(
+                VisionConstants.APTAG_CAMERA_NAMES[0],
+                VisionConstants.APTAG_POSE_EST_CAM_FL_POS,
+                () -> m_swerve.getState().Pose),
+            new VisionIOPhotonVision(
+                VisionConstants.APTAG_CAMERA_NAMES[1],
+                VisionConstants.APTAG_POSE_EST_CAM_F_POS,
+                () -> m_swerve.getState().Pose),
+            new VisionIOPhotonVision(
+                VisionConstants.APTAG_CAMERA_NAMES[2],
+                VisionConstants.APTAG_POSE_EST_CAM_FR_POS,
+                () -> m_swerve.getState().Pose),
+            new VisionIOPhotonVision(
+                VisionConstants.APTAG_CAMERA_NAMES[3],
+                VisionConstants.APTAG_POSE_EST_CAM_R_POS,
+                () -> m_swerve.getState().Pose),
+            new VisionIOPhotonVision(
+                VisionConstants.APTAG_CAMERA_NAMES[4],
+                VisionConstants.APTAG_POSE_EST_CAM_BR_POS,
+                () -> m_swerve.getState().Pose),
+            new VisionIOPhotonVision(
+                VisionConstants.APTAG_CAMERA_NAMES[5],
+                VisionConstants.APTAG_POSE_EST_CAM_B_POS,
+                () -> m_swerve.getState().Pose),
+            new VisionIOPhotonVision(
+                VisionConstants.APTAG_CAMERA_NAMES[6],
+                VisionConstants.APTAG_POSE_EST_CAM_BL_POS,
+                () -> m_swerve.getState().Pose),
+            new VisionIOPhotonVision(
+                VisionConstants.APTAG_CAMERA_NAMES[7],
+                VisionConstants.APTAG_POSE_EST_CAM_L_POS,
+                () -> m_swerve.getState().Pose));
+        break;
+      case SIM:
+        m_vision = new VisionSubsystem(
+            m_swerve,
+            m_swerve::addVisionMeasurement,
+            new VisionIOPhotonVisionSim(
+                VisionConstants.APTAG_CAMERA_NAMES[0],
+                VisionConstants.APTAG_POSE_EST_CAM_FL_POS,
+                m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            new VisionIOPhotonVisionSim(
+                VisionConstants.APTAG_CAMERA_NAMES[1],
+                VisionConstants.APTAG_POSE_EST_CAM_F_POS,
+                m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            new VisionIOPhotonVisionSim(
+                VisionConstants.APTAG_CAMERA_NAMES[2],
+                VisionConstants.APTAG_POSE_EST_CAM_FR_POS,
+                m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            new VisionIOPhotonVisionSim(
+                VisionConstants.APTAG_CAMERA_NAMES[3],
+                VisionConstants.APTAG_POSE_EST_CAM_R_POS,
+                m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            new VisionIOPhotonVisionSim(
+                VisionConstants.APTAG_CAMERA_NAMES[4],
+                VisionConstants.APTAG_POSE_EST_CAM_BR_POS,
+                m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            new VisionIOPhotonVisionSim(
+                VisionConstants.APTAG_CAMERA_NAMES[5],
+                VisionConstants.APTAG_POSE_EST_CAM_B_POS,
+                m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            new VisionIOPhotonVisionSim(
+                VisionConstants.APTAG_CAMERA_NAMES[6],
+                VisionConstants.APTAG_POSE_EST_CAM_BL_POS,
+                m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            new VisionIOPhotonVisionSim(
+                VisionConstants.APTAG_CAMERA_NAMES[7],
+                VisionConstants.APTAG_POSE_EST_CAM_L_POS,
+                m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose));
+        break;
+      default:
+        m_vision = new VisionSubsystem(m_swerve, m_swerve::addVisionMeasurement, new VisionIO() {});
+        break;
+    }
     m_superstructure = new Superstructure(
         m_swerve,
         m_vision);
@@ -107,7 +146,9 @@ public class RobotContainer {
     // Configure Joystick Bindings
     configureBindings();
 
-    m_swerve.resetPose(new Pose2d(3, 3, new Rotation2d()));
+    // Reset the swerve pose to a known position if we are in sim
+    if (!RobotBase.isReal())
+      m_swerve.resetPose(new Pose2d(3, 3, new Rotation2d()));
   }
 
   private void configureBindings() {
