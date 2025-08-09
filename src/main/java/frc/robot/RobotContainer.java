@@ -74,35 +74,35 @@ public class RobotContainer {
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[0],
             VisionConstants.APTAG_POSE_EST_CAM_FL_POS,
-            () -> drivetrain.getState()),
+            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[1],
             VisionConstants.APTAG_POSE_EST_CAM_F_POS,
-            () -> drivetrain.getState()),
+            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[2],
             VisionConstants.APTAG_POSE_EST_CAM_FR_POS,
-            () -> drivetrain.getState()),
+            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[3],
             VisionConstants.APTAG_POSE_EST_CAM_R_POS,
-            () -> drivetrain.getState()),
+            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[4],
             VisionConstants.APTAG_POSE_EST_CAM_BR_POS,
-            () -> drivetrain.getState()),
+            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[5],
             VisionConstants.APTAG_POSE_EST_CAM_B_POS,
-            () -> drivetrain.getState()),
+            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[6],
             VisionConstants.APTAG_POSE_EST_CAM_BL_POS,
-            () -> drivetrain.getState()),
+            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[7],
             VisionConstants.APTAG_POSE_EST_CAM_L_POS,
-            () -> drivetrain.getState()));
+            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose));
     superstructure = new Superstructure(
         drivetrain,
         vision);

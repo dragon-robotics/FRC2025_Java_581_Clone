@@ -15,8 +15,7 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -28,7 +27,7 @@ public class VisionIOPhotonVision implements VisionIO {
 	protected final Transform3d m_robotToCamera;
   protected final PhotonPoseEstimator m_poseEstimator;
 
-  protected final Supplier<SwerveDriveState> m_swerveDriveStateSupplier;
+  protected final Supplier<Pose2d> m_swerveDrivePoseSupplier;
 
   /**
    * Creates a new VisionIOPV.
@@ -40,10 +39,10 @@ public class VisionIOPhotonVision implements VisionIO {
   public VisionIOPhotonVision(
       String name,
       Transform3d robotToCamera,
-      Supplier<SwerveDriveState> swerveDriveStateSupplier) {
+      Supplier<Pose2d> swerveDrivePoseSupplier) {
     m_camera = new PhotonCamera(name);
     m_robotToCamera = robotToCamera;
-    m_swerveDriveStateSupplier = swerveDriveStateSupplier;
+    m_swerveDrivePoseSupplier = swerveDrivePoseSupplier;
     m_poseEstimator =
         new PhotonPoseEstimator(
             APTAG_FIELD_LAYOUT,
@@ -64,7 +63,7 @@ public class VisionIOPhotonVision implements VisionIO {
     inputs.cameraName = m_camera.getName();
 
     // Update pose estimation heading data //
-    m_poseEstimator.addHeadingData(Timer.getFPGATimestamp(), m_swerveDriveStateSupplier.get().Pose.getRotation());
+    m_poseEstimator.addHeadingData(Timer.getFPGATimestamp(), m_swerveDrivePoseSupplier.get().getRotation());
 
     // Read new camera observations
     Set<Short> tagIds = new HashSet<>();

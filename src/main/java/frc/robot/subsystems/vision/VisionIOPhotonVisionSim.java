@@ -6,6 +6,7 @@ import org.photonvision.simulation.VisionSystemSim;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import static frc.robot.Constants.FieldConstants.*;
@@ -17,7 +18,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
   private static VisionSystemSim m_visionSim;
   private final PhotonCameraSim m_cameraSim;
 
-  private final Supplier<SwerveDriveState> m_swerveDriveStateSupplier;
+  private final Supplier<Pose2d> m_swerveDrivePoseSupplier;
 
   /**
    * Creates a new VisionIOPhotonVisionSim.
@@ -28,9 +29,9 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
   public VisionIOPhotonVisionSim(
       String name,
       Transform3d robotToCamera,
-      Supplier<SwerveDriveState> swerveDriveStateSupplier) {
-    super(name, robotToCamera, swerveDriveStateSupplier);
-    m_swerveDriveStateSupplier = swerveDriveStateSupplier;
+      Supplier<Pose2d> swerveDrivePoseSupplier) {
+    super(name, robotToCamera, swerveDrivePoseSupplier);
+    m_swerveDrivePoseSupplier = swerveDrivePoseSupplier;
 
     // Initialize vision sim
     if (m_visionSim == null) {
@@ -61,7 +62,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
 
   @Override
   public void updateInputs(VisionIOInputs inputs) {
-    m_visionSim.update(m_swerveDriveStateSupplier.get().Pose);
+    m_visionSim.update(m_swerveDrivePoseSupplier.get());
     super.updateInputs(inputs);
   }
 

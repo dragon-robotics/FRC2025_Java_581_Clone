@@ -57,7 +57,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * This is null if the robot is not in simulation.
      * It is used to update the simulated drivetrain state.
      */
-    private MapleSimSwerveDrivetrain mapleSimSwerveDrivetrain = null;
+    public MapleSimSwerveDrivetrain mapleSimSwerveDrivetrain = null;
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -298,7 +298,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private void startSimThread() {
         mapleSimSwerveDrivetrain = new MapleSimSwerveDrivetrain(
                 Seconds.of(kSimLoopPeriod),
-                Pounds.of(115),
+                Pounds.of(150),
                 Inches.of(34),
                 Inches.of(34),
                 DCMotor.getKrakenX60(1),
