@@ -9,74 +9,84 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.DriveMaintainHeadingCommand;
+import frc.robot.generated.TunerConstants;
 import frc.robot.RobotContainer;
+import frc.robot.Telemetry;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class Superstructure {
   /* Subsystems */
-  private final CommandSwerveDrivetrain drivetrain;
-  private final VisionSubsystem vision;
+  private final CommandSwerveDrivetrain m_swerve;
+  private final VisionSubsystem m_vision;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
-  private final SwerveRequest.FieldCentric drive;
-  private final SwerveRequest.SwerveDriveBrake brake;
-  private final SwerveRequest.PointWheelsAt point;
-  private final SwerveRequest.RobotCentric driveRobotCentric;
-  private final SwerveRequest.FieldCentricFacingAngle driveMaintainHeading;
+  private final SwerveRequest.FieldCentric m_fieldDrive;
+  private final SwerveRequest.SwerveDriveBrake m_brakeDrive;
+  private final SwerveRequest.PointWheelsAt m_pointDrive;
+  private final SwerveRequest.RobotCentric m_robotDrive;
+  private final SwerveRequest.FieldCentricFacingAngle m_fieldDriveFacingAngle;
 
   /* Used for path following */
-  private final SwerveRequest.ApplyFieldSpeeds applyFieldSpeeds;
-  private final SwerveRequest.ApplyRobotSpeeds applyRobotSpeeds;
+  private final SwerveRequest.ApplyFieldSpeeds m_applyFieldSpeeds;
+  private final SwerveRequest.ApplyRobotSpeeds m_applyRobotSpeeds;
+
+  private final Telemetry logger;
 
   /** Creates a new Superstructure. */
   public Superstructure(
       CommandSwerveDrivetrain swerve,
       VisionSubsystem vision) {
-    this.drivetrain = swerve;
-    this.vision = vision;
+    m_swerve = swerve;
+    m_vision = vision;
 
     // Instantiate default field centric drive (no need to maintain heading) //
-    drive = new SwerveRequest.FieldCentric()
+    m_fieldDrive = new SwerveRequest.FieldCentric()
         .withDeadband(SwerveConstants.MAX_SPEED_METERS_PER_SECOND * 0.05)
         .withRotationalDeadband(SwerveConstants.MAX_ANGULAR_RATE_RADIANS_PER_SECOND * 0.05) // Add a 5% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage) // Use open-loop control for drive motors
         .withDesaturateWheelSpeeds(true); // Desaturate wheel speeds to prevent clipping
 
     // Instantiate brake (X-lock swerve wheels) //
-    brake = new SwerveRequest.SwerveDriveBrake();
+    m_brakeDrive = new SwerveRequest.SwerveDriveBrake();
 
     // Instantiate point (point swerve wheels in a specific direction) //
-    point = new SwerveRequest.PointWheelsAt();
+    m_pointDrive = new SwerveRequest.PointWheelsAt();
 
     // Instantiate robot centric drive (forward is based on forward pose of the
     // robot) //
-    driveRobotCentric = new SwerveRequest.RobotCentric()
-        .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+    m_robotDrive = new SwerveRequest.RobotCentric()
+        .withDeadband(SwerveConstants.MAX_SPEED_METERS_PER_SECOND * 0.05)
+        .withRotationalDeadband(SwerveConstants.MAX_ANGULAR_RATE_RADIANS_PER_SECOND * 0.05) // Add a 5% deadband
+        .withDriveRequestType(DriveRequestType.OpenLoopVoltage) // Use open-loop control for drive motors
+        .withDesaturateWheelSpeeds(true); // Desaturate wheel speeds to prevent clipping
 
     // Instantiate field centric drive (maintain heading) //
-    driveMaintainHeading = new SwerveRequest.FieldCentricFacingAngle()
+    m_fieldDriveFacingAngle = new SwerveRequest.FieldCentricFacingAngle()
         .withDeadband(SwerveConstants.MAX_SPEED_METERS_PER_SECOND * 0.05)
         .withRotationalDeadband(SwerveConstants.MAX_ANGULAR_RATE_RADIANS_PER_SECOND * 0.05)
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage) // Use open-loop control for drive motors
         .withDesaturateWheelSpeeds(true);
 
     // Set the PID constants for the Maintain Heading controller //
-    driveMaintainHeading.HeadingController.setPID(
+    m_fieldDriveFacingAngle.HeadingController.setPID(
         SwerveConstants.HEADING_KP,
         SwerveConstants.HEADING_KI,
         SwerveConstants.HEADING_KD);
-    driveMaintainHeading.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
-    driveMaintainHeading.HeadingController.setTolerance(SwerveConstants.HEADING_TOLERANCE);
+    m_fieldDriveFacingAngle.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+    m_fieldDriveFacingAngle.HeadingController.setTolerance(SwerveConstants.HEADING_TOLERANCE);
 
     // Instantiate the Field and Robot Speeds Swerve Requests //
-    applyFieldSpeeds
+    m_applyFieldSpeeds
       = new SwerveRequest.ApplyFieldSpeeds()
         .withDesaturateWheelSpeeds(true)
         .withDriveRequestType(DriveRequestType.Velocity);
-    applyRobotSpeeds
+    m_applyRobotSpeeds
       = new SwerveRequest.ApplyRobotSpeeds()
         .withDesaturateWheelSpeeds(true)
-        .withDriveRequestType(DriveRequestType.Velocity);    
+        .withDriveRequestType(DriveRequestType.Velocity);
+
+    logger = new Telemetry(SwerveConstants.MAX_SPEED_METERS_PER_SECOND);
+    m_swerve.registerTelemetry(logger::telemeterize);
   }
 
   public Command DriveMaintainHeading(
@@ -86,11 +96,11 @@ public class Superstructure {
   ) {
 
     return new DriveMaintainHeadingCommand(
-        drivetrain,
+        m_swerve,
         translationSupplier,
         strafeSupplier,
         rotationSupplier,
-        drive,
-        driveMaintainHeading);
+        m_fieldDrive,
+        m_fieldDriveFacingAngle);
   }
 }

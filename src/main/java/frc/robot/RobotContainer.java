@@ -35,25 +35,12 @@ public class RobotContainer {
   private final CommandXboxController joystick;
 
   /* Subsystems */
-  public final CommandSwerveDrivetrain drivetrain;
-  public final VisionSubsystem vision;
-  public final Superstructure superstructure;
+  public final CommandSwerveDrivetrain m_swerve;
+  public final VisionSubsystem m_vision;
+  public final Superstructure m_superstructure;
 
   /* Commands */
-
-  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-  private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max
-                                                                                    // angular velocity
-
-  /* Setting up bindings for necessary control of the swerve drive platform */
-  private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-      .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-
-  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-
-  private final Telemetry logger = new Telemetry(MaxSpeed);
+  private final Command m_driveMaintainHeadingCommand;
 
   /* Path follower */
   private final SendableChooser<Command> autoChooser;
@@ -64,50 +51,54 @@ public class RobotContainer {
     joystick = new CommandXboxController(0);
 
     // Initialize the Subsystems
-    drivetrain = TunerConstants.createDrivetrain(
+    m_swerve = TunerConstants.createDrivetrain(
         250,
         SwerveConstants.ODOMETRY_STD,
         VisionConstants.DEFAULT_TAG_STDDEV);
-    vision = new VisionSubsystem(
-        drivetrain,
-        drivetrain::addVisionMeasurement,
+    m_vision = new VisionSubsystem(
+        m_swerve,
+        m_swerve::addVisionMeasurement,
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[0],
             VisionConstants.APTAG_POSE_EST_CAM_FL_POS,
-            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[1],
             VisionConstants.APTAG_POSE_EST_CAM_F_POS,
-            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[2],
             VisionConstants.APTAG_POSE_EST_CAM_FR_POS,
-            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[3],
             VisionConstants.APTAG_POSE_EST_CAM_R_POS,
-            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[4],
             VisionConstants.APTAG_POSE_EST_CAM_BR_POS,
-            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[5],
             VisionConstants.APTAG_POSE_EST_CAM_B_POS,
-            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[6],
             VisionConstants.APTAG_POSE_EST_CAM_BL_POS,
-            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
+            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose),
         new VisionIOPhotonVisionSim(
             VisionConstants.APTAG_CAMERA_NAMES[7],
             VisionConstants.APTAG_POSE_EST_CAM_L_POS,
-            drivetrain.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose));
-    superstructure = new Superstructure(
-        drivetrain,
-        vision);
+            m_swerve.mapleSimSwerveDrivetrain.mapleSimDrive::getSimulatedDriveTrainPose));
+    m_superstructure = new Superstructure(
+        m_swerve,
+        m_vision);
 
-    // Initialize all the Namedcommands
+    // Initialize all the NamedCommands
+    m_driveMaintainHeadingCommand = m_superstructure.DriveMaintainHeading(
+        () -> -joystick.getLeftY(),
+        () -> -joystick.getLeftX(),
+        () -> -joystick.getRightX());
 
     // Initialize the auto chooser
     autoChooser = AutoBuilder.buildAutoChooser("Tests");
@@ -116,39 +107,35 @@ public class RobotContainer {
     // Configure Joystick Bindings
     configureBindings();
 
-    drivetrain.resetPose(new Pose2d(3, 3, new Rotation2d()));
+    m_swerve.resetPose(new Pose2d(3, 3, new Rotation2d()));
   }
 
   private void configureBindings() {
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
-    drivetrain.setDefaultCommand(
-        superstructure.DriveMaintainHeading(
-            () -> -joystick.getLeftY(),
-            () -> -joystick.getLeftX(),
-            () -> -joystick.getRightX()));
+    m_swerve.setDefaultCommand(m_driveMaintainHeadingCommand);
 
-    // Idle while the robot is disabled. This ensures the configured
-    // neutral mode is applied to the drive motors while disabled.
-    final var idle = new SwerveRequest.Idle();
-    RobotModeTriggers.disabled().whileTrue(
-        drivetrain.applyRequest(() -> idle).ignoringDisable(true));
+    // // Idle while the robot is disabled. This ensures the configured
+    // // neutral mode is applied to the drive motors while disabled.
+    // final var idle = new SwerveRequest.Idle();
+    // RobotModeTriggers.disabled().whileTrue(
+    // drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-    joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.b().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+    // joystick.b().whileTrue(drivetrain
+    // .applyRequest(() -> point.withModuleDirection(new
+    // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
-    // Run SysId routines when holding back/start and X/Y.
-    // Note that each routine should be run exactly once in a single log.
-    joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    // // Run SysId routines when holding back/start and X/Y.
+    // // Note that each routine should be run exactly once in a single log.
+    // joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    // joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    // joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    // joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    // reset the field-centric heading on left bumper press
-    joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
-    drivetrain.registerTelemetry(logger::telemeterize);
+    // // reset the field-centric heading on left bumper press
+    // joystick.leftBumper().onTrue(drivetrain.runOnce(() ->
+    // drivetrain.seedFieldCentric()));
   }
 
   public Command getAutonomousCommand() {

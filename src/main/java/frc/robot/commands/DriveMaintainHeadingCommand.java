@@ -21,7 +21,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class DriveMaintainHeadingCommand extends Command {
 
-  private final CommandSwerveDrivetrain m_drivetrain;
+  private final CommandSwerveDrivetrain m_swerve;
   private DoubleSupplier m_translationSupplier;
   private DoubleSupplier m_strafeSupplier;
   private DoubleSupplier m_rotationSupplier;
@@ -36,14 +36,14 @@ public class DriveMaintainHeadingCommand extends Command {
 
   /** Creates a new DriveMaintainingHeadingCommand. */
   public DriveMaintainHeadingCommand(
-    CommandSwerveDrivetrain drivetrain,
+    CommandSwerveDrivetrain swerve,
     DoubleSupplier translationSupplier,
     DoubleSupplier strafeSupplier,
     DoubleSupplier rotationSupplier,
     SwerveRequest.FieldCentric fieldDrive,
     SwerveRequest.FieldCentricFacingAngle fieldDriveFacingAngle
   ) {
-    m_drivetrain = drivetrain;
+    m_swerve = swerve;
     m_translationSupplier = translationSupplier;
     m_strafeSupplier = strafeSupplier;
     m_rotationSupplier = rotationSupplier;
@@ -56,7 +56,7 @@ public class DriveMaintainHeadingCommand extends Command {
     currentHeading = Optional.empty();
 
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(m_drivetrain);
+    addRequirements(m_swerve);
   }
 
   // Called when the command is initially scheduled.
@@ -95,12 +95,12 @@ public class DriveMaintainHeadingCommand extends Command {
     // Active rotation = rotation triggered in the last 100ms and greater than 10deg/s angular speed
     boolean rotationActive =
       MathUtil.isNear(rotationLastTriggered, Timer.getFPGATimestamp(), 0.1) &&
-      (Math.abs(m_drivetrain.getState().Speeds.omegaRadiansPerSecond) > Math.toRadians(10));
+      (Math.abs(m_swerve.getState().Speeds.omegaRadiansPerSecond) > Math.toRadians(10));
 
     if(rotationTriggered || rotationActive){
       // If the rotation is triggered or active, we need to set the current heading null
       currentHeading = Optional.empty();
-      m_drivetrain.setControl(
+      m_swerve.setControl(
         m_fieldDrive
           .withVelocityX(translation)
           .withVelocityY(strafe)
@@ -110,17 +110,17 @@ public class DriveMaintainHeadingCommand extends Command {
       // If the rotation is not triggered, we can use the current heading
       if (currentHeading.isEmpty()) {
         // If the current heading is not set, we can use the drivetrain's current heading
-        currentHeading = Optional.of(m_drivetrain.getState().Pose.getRotation());
+        currentHeading = Optional.of(m_swerve.getState().Pose.getRotation());
       }
 
       // Grab the alliance color and adjust the current heading accordingly
       currentHeading =
         DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ?
           // If the alliance color is red, we need to flip the heading
-          Optional.of(m_drivetrain.getState().Pose.getRotation().rotateBy(Rotation2d.fromDegrees(180))) :
-          Optional.of(m_drivetrain.getState().Pose.getRotation());
+          Optional.of(m_swerve.getState().Pose.getRotation().rotateBy(Rotation2d.fromDegrees(180))) :
+          Optional.of(m_swerve.getState().Pose.getRotation());
 
-      m_drivetrain.setControl(
+      m_swerve.setControl(
         m_fieldDriveFacingAngle
           .withVelocityX(translation)
           .withVelocityY(strafe)
