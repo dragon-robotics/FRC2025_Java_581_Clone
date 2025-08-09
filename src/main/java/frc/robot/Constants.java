@@ -4,6 +4,9 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -14,6 +17,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.generated.TunerConstants;
 
@@ -31,6 +36,94 @@ public class Constants {
 
   public static final class FieldConstants {
     public static AprilTagFieldLayout APTAG_FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+
+    // Load a custom AprilTag field layout if available //
+    // The different layouts of the AprilTags on the field
+    public static final AprilTagFieldLayout DEFAULT_APTAG_FIELD_LAYOUT;
+    public static final AprilTagFieldLayout WELDED_RED_APTAG_FIELD_LAYOUT;
+    public static final AprilTagFieldLayout WELDED_BLUE_APTAG_FIELD_LAYOUT;
+
+    // Static initializer block
+    static {
+      // Load default layout - this does NOT throw IOException
+      // It might return null if the resource is missing, though kDefaultField should
+      // be safe.
+      // Construct paths for welded layouts
+      Path defaultPath = Path.of(
+          Filesystem.getDeployDirectory().getPath(),
+          "apriltags",
+          "welded",
+          "2025-reef-only.json");
+      AprilTagFieldLayout defaultLayout = null;
+      try {
+        defaultLayout = new AprilTagFieldLayout(defaultPath);
+      } catch (IOException e) {
+        System.err.println("!!! CRITICAL: Failed to load default AprilTag field resource!");
+        DriverStation.reportError("CRITICAL: Failed to load default AprilTag field resource: " + e.getMessage(), true);
+
+        // If loading from file fails, we will use the static kDefaultField layout
+        // as a fallback.
+        defaultLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+      }
+
+      // Initialize temporary variables for welded layouts
+      AprilTagFieldLayout redLayout = null;
+      AprilTagFieldLayout blueLayout = null;
+
+      // Construct paths for welded layouts
+      Path redPath = Path.of(
+          Filesystem.getDeployDirectory().getPath(),
+          "apriltags",
+          "welded",
+          "2025-red-reef.json");
+      Path bluePath = Path.of(
+          Filesystem.getDeployDirectory().getPath(),
+          "apriltags",
+          "welded",
+          "2025-blue-reef.json");
+
+      // Try loading layouts from file paths - THESE can throw IOException
+      try {
+        redLayout = new AprilTagFieldLayout(redPath);
+        blueLayout = new AprilTagFieldLayout(bluePath);
+      } catch (IOException e) {
+        // Handle the error if loading from files fails
+        System.err.println("!!! Failed to load welded AprilTag field layout files!");
+        e.printStackTrace();
+        DriverStation.reportError("Failed to load welded AprilTag layouts: " + e.getMessage(), true);
+        // redLayout and blueLayout will remain null if they failed
+      } finally {
+        // Assign the loaded layouts to the final fields
+        // Use default layout as fallback if welded layouts are still null
+        DEFAULT_APTAG_FIELD_LAYOUT = defaultLayout;
+        WELDED_RED_APTAG_FIELD_LAYOUT = (redLayout != null) ? redLayout : defaultLayout;
+        WELDED_BLUE_APTAG_FIELD_LAYOUT = (blueLayout != null) ? blueLayout : defaultLayout;
+
+        // Now initialize the main layout based on alliance
+        AprilTagFieldLayout selectedLayout = DEFAULT_APTAG_FIELD_LAYOUT; // Start with default
+        if (DriverStation.getAlliance().isPresent()) {
+          if (DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
+            // Prefer loaded red layout, fallback to default
+            selectedLayout = WELDED_RED_APTAG_FIELD_LAYOUT;
+          } else { // Blue Alliance
+            // Prefer loaded blue layout, fallback to default
+            selectedLayout = WELDED_BLUE_APTAG_FIELD_LAYOUT;
+          }
+        } else {
+          // Default if no alliance is set (e.g., practice mode) - use Blue or Default
+          selectedLayout = WELDED_BLUE_APTAG_FIELD_LAYOUT;
+        }
+
+        // Assign the final selected layout
+        APTAG_FIELD_LAYOUT = selectedLayout;
+
+        // Final check if the main layout is still null (only if default also failed)
+        if (APTAG_FIELD_LAYOUT == null) {
+          // This is a critical state
+          DriverStation.reportError("CRITICAL: No AprilTag field layout could be assigned!", true);
+        }
+      }
+    }    
   }
 
   public static class VisionConstants {
@@ -151,7 +244,7 @@ public class Constants {
     public static final Matrix<N3, N1> DEFAULT_TAG_STDDEV = VecBuilder.fill(0.9, 0.9, 0.9);
 
     // Basic filtering thresholds
-    public static double MAX_AMBIGUITY = 0.3;
+    public static double MAX_AMBIGUITY = 0.1;
     public static double MAX_Z_ERROR = 0.75;
 
     // Standard deviation baselines, for 1 meter distance and 1 tag
