@@ -152,9 +152,27 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // Note that X is defined as forward according to WPILib convention,
-    // and Y is defined as to the left according to WPILib convention.
+
+    // Default swerve command is to drive while maintaining heading.
     m_swerve.setDefaultCommand(m_driveMaintainHeadingCommand);
+
+    // Intaking Coral auto-aligns to the 1 of 6 closest coral station locations
+    // Left Bumper
+
+    // Intaking Algae on the reef auto-aligns to the closest algae location
+    // M1 (AKA Middle Left Bumper)
+
+    // Intaking Algae on the floor auto-aligns to the closest algae
+    // Left Trigger acting as a button
+
+    // Scoring Coral auto-aligns to the closest scoring branch
+    // Right Bumper
+
+    // Scoring Processor auto-aligns to the closest scoring processor
+    // M2 (AKA Right Middle Bumper)
+
+    // Scoring Barge auto-aligns to 1 of 4 closest barge locations
+    // Right Trigger acting as a button
 
     // // Idle while the robot is disabled. This ensures the configured
     // // neutral mode is applied to the drive motors while disabled.
