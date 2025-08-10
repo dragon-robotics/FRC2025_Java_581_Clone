@@ -212,7 +212,7 @@ public class VisionSubsystem extends SubsystemBase {
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
       }
 
-      // Log camera datadata
+      // Log camera data
       m_tagPosesPerCamArrayPublisherList.get(cameraIndex).set(
         tagPoses.toArray(new Pose3d[tagPoses.size()]));
       m_robotPosesPerCamArrayPublisherList.get(cameraIndex).set(
