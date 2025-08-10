@@ -2,16 +2,22 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
@@ -36,6 +42,9 @@ public class Constants {
 
   public static final class FieldConstants {
     public static AprilTagFieldLayout APTAG_FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+
+    public static final double FIELD_LENGTH = APTAG_FIELD_LAYOUT.getFieldLength();
+    public static final double FIELD_WIDTH = APTAG_FIELD_LAYOUT.getFieldWidth();
 
     // Load a custom AprilTag field layout if available //
     // The different layouts of the AprilTags on the field
@@ -123,7 +132,85 @@ public class Constants {
           DriverStation.reportError("CRITICAL: No AprilTag field layout could be assigned!", true);
         }
       }
-    }    
+    }
+
+    public static class CoralStation {
+      // public static final Pose2d[] BLUE_CORAL_STATION_TAGS = new Pose2d[2];
+      // public static final Pose2d[] BLUE_CORAL_STATION_LOCS = new Pose2d[6];
+      // public static final Pose2d[] RED_CORAL_STATION_LOCS = new Pose2d[6]; // Red coral station locations can be initialized from Blue coral station locations
+    }
+
+    public static class Reef {
+      // Get the pose of the reef AprilTag on the blue side //
+      public static final Pose2d[] BLUE_REEF_TAGS = new Pose2d[6];
+      public static final Pose2d[] BLUE_REEF_BRANCHES = new Pose2d[12];
+      public static final Pose2d[] BLUE_REEF_ALGAE = new Pose2d[6];
+      public static final Pose2d[] RED_REEF_BRANCHES = new Pose2d[12]; // Red reef branches can be initialized from Blue reef branches
+      public static final Pose2d[] RED_REEF_ALGAE = new Pose2d[6]; // Red reef algae can be initialized from Blue reef algae locations
+      
+      static {
+        // Get the Apriltag layout //
+        AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        double adjustX = Units.inchesToMeters(30.738); // Center of robot + bumper
+        // double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
+        double adjustY = Units.inchesToMeters(6.468); // Positive adjustment for Left and Negative for Right
+
+        // Get the blue reef tags from the layout //
+        for(int tag = 17; tag < 23; tag++) {
+          BLUE_REEF_TAGS[tag - 17] = aprilTagLayout.getTagPose(tag).get().toPose2d();
+
+          // Get the rotation for the reef tag. Even (0, 2, 4, etc.) is left and odd (1, 3, 5) is right //
+          // Left branch //
+          BLUE_REEF_BRANCHES[2*(tag - 17)] = new Pose2d(
+            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getX(),
+            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getY(),
+            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees()))
+            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          // Right branch //
+          BLUE_REEF_BRANCHES[2*(tag - 17) + 1] = new Pose2d(
+            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getX(),
+            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getY(),
+            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees()))
+            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          // Algae locations //
+          BLUE_REEF_ALGAE[tag - 17] = new Pose2d(
+            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getX(),
+            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getY(),
+            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees()))
+            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+        }
+
+        // Initialize the red reef branches //
+        for(int branch = 0; branch < 12; branch++) {
+          // Get the rotation for the reef tag. Even (0, 2, 4, etc.) is left and odd (1, 3, 5) is right //
+          RED_REEF_BRANCHES[branch] = new Pose2d(
+            FIELD_LENGTH - BLUE_REEF_BRANCHES[branch].getX(),
+            FIELD_WIDTH - BLUE_REEF_BRANCHES[branch].getY(),
+            BLUE_REEF_BRANCHES[branch].getRotation().rotateBy(Rotation2d.kPi));
+          
+          // Initialize the 6 red algae locations //
+          if (branch < 6) {
+            RED_REEF_ALGAE[branch] = new Pose2d(
+              FIELD_LENGTH - BLUE_REEF_ALGAE[branch].getX(),
+              FIELD_WIDTH - BLUE_REEF_ALGAE[branch].getY(),
+              BLUE_REEF_ALGAE[branch].getRotation().rotateBy(Rotation2d.kPi));
+          }
+        }
+      }
+    }
+
+    public static class Processor {
+      // public static final Pose2d BLUE_PROCESSOR_TAG;
+      // public static final Pose2d RED_PROCESSOR_TAG;
+
+      // static {
+
+      // }
+    }
+
+    public static class Barge {
+
+    }
   }
 
   public static class VisionConstants {
