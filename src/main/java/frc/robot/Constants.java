@@ -151,8 +151,7 @@ public class Constants {
       static {
         // Get the Apriltag layout //
         AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-        double adjustX = Units.inchesToMeters(30.738); // Center of robot + bumper
-        // double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
+        double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
         double adjustY = Units.inchesToMeters(6.468); // Positive adjustment for Left and Negative for Right
 
         // Get the blue reef tags from the layout //
@@ -164,19 +163,19 @@ public class Constants {
           BLUE_REEF_BRANCHES[2*(tag - 17)] = new Pose2d(
             BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getX(),
             BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees()))
+            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees() + 180))
             .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
           // Right branch //
           BLUE_REEF_BRANCHES[2*(tag - 17) + 1] = new Pose2d(
             BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getX(),
             BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees()))
+            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees() + 180))
             .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
           // Algae locations //
           BLUE_REEF_ALGAE[tag - 17] = new Pose2d(
             BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getX(),
             BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees()))
+            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees() + 180))
             .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
         }
 
