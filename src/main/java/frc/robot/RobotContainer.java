@@ -35,6 +35,7 @@ public class RobotContainer {
 
   /* Commands */
   private final Command m_driveMaintainHeadingCommand;
+  private final Command m_driveToClosestReefBranchCommand;
 
   /* Path follower */
   private final SendableChooser<Command> autoChooser;
@@ -138,6 +139,7 @@ public class RobotContainer {
         () -> -joystick.getLeftY(),
         () -> -joystick.getLeftX(),
         () -> -joystick.getRightX());
+    m_driveToClosestReefBranchCommand = m_superstructure.DriveToClosestReefPoseCommand();
 
     // Initialize the auto chooser
     autoChooser = AutoBuilder.buildAutoChooser("Tests");
@@ -167,6 +169,7 @@ public class RobotContainer {
 
     // Scoring Coral auto-aligns to the closest scoring branch
     // Right Bumper
+    joystick.rightBumper().whileTrue(m_driveToClosestReefBranchCommand);
 
     // Scoring Processor auto-aligns to the closest scoring processor
     // M2 (AKA Right Middle Bumper)

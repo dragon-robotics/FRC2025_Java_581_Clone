@@ -1,14 +1,27 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.path.PathConstraints;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.DriveMaintainHeadingCommand;
+import frc.robot.commands.DriveToPoseProfPID;
 import frc.robot.generated.TunerConstants;
 import frc.robot.RobotContainer;
 import frc.robot.Telemetry;
@@ -30,7 +43,11 @@ public class Superstructure {
   private final SwerveRequest.ApplyFieldSpeeds m_applyFieldSpeeds;
   private final SwerveRequest.ApplyRobotSpeeds m_applyRobotSpeeds;
 
+  /* Used for Phoenix6 Logging */
   private final Telemetry logger;
+
+  /* Used for maintaining heading */
+  private Optional<Rotation2d> currentHeading = Optional.empty();
 
   /** Creates a new Superstructure. */
   public Superstructure(
@@ -76,12 +93,10 @@ public class Superstructure {
     m_fieldDriveFacingAngle.HeadingController.setTolerance(SwerveConstants.HEADING_TOLERANCE);
 
     // Instantiate the Field and Robot Speeds Swerve Requests //
-    m_applyFieldSpeeds
-      = new SwerveRequest.ApplyFieldSpeeds()
+    m_applyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
         .withDesaturateWheelSpeeds(true)
         .withDriveRequestType(DriveRequestType.Velocity);
-    m_applyRobotSpeeds
-      = new SwerveRequest.ApplyRobotSpeeds()
+    m_applyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds()
         .withDesaturateWheelSpeeds(true)
         .withDriveRequestType(DriveRequestType.Velocity);
 
@@ -90,10 +105,9 @@ public class Superstructure {
   }
 
   public Command DriveMaintainHeading(
-    DoubleSupplier translationSupplier,
-    DoubleSupplier strafeSupplier,
-    DoubleSupplier rotationSupplier
-  ) {
+      DoubleSupplier translationSupplier,
+      DoubleSupplier strafeSupplier,
+      DoubleSupplier rotationSupplier) {
 
     return new DriveMaintainHeadingCommand(
         m_swerve,
@@ -102,5 +116,54 @@ public class Superstructure {
         rotationSupplier,
         m_fieldDrive,
         m_fieldDriveFacingAngle);
+  }
+
+  public Command DriveToClosestReefPoseCommand() {
+    return new DeferredCommand(() -> {
+      // Grab the robot's current alliance
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+
+      // Grab the robot's current pose
+      Pose2d currentPose = m_swerve.getState().Pose;
+
+      // Initialize the target poses based on the alliance and whether we are left or
+      // right //
+      Pose2d[] targetPoses = alliance.isPresent() && (alliance.get() == Alliance.Red)
+          ? FieldConstants.Reef.RED_REEF_BRANCHES
+          : FieldConstants.Reef.BLUE_REEF_BRANCHES;
+
+      // Calculate the pose closest to the current pose
+      Pose2d closestPose = null;
+      double minDistanceSq = Double.MAX_VALUE; // Use squared distance to avoid sqrt
+
+      // Iterate through the list of target poses
+      for (Pose2d targetPose : targetPoses) {
+        Transform2d translationDelta = targetPose.minus(currentPose);
+
+        // Calculate the squared distance between the translations
+        double distanceSq = translationDelta.getTranslation().getNorm();
+
+        // If this pose is closer than the current minimum, update
+        if (distanceSq < minDistanceSq) {
+          minDistanceSq = distanceSq;
+          closestPose = targetPose;
+        }
+      }
+
+      // Create waypoint list
+      List<Pose2d> waypoints = new ArrayList<>();
+
+      // Add intermediate waypoint (1 meter back from target)
+      Transform2d backwardOffset = new Transform2d(-0.25, 0.0, Rotation2d.kZero);
+      waypoints.add(closestPose.transformBy(backwardOffset));
+
+      // Add final destination
+      waypoints.add(closestPose);
+
+      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, waypoints.get(0))
+          .andThen(new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, waypoints.get(1)));
+
+    }, Set.of(m_swerve))
+        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
   }
 }
