@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
@@ -26,7 +27,7 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 public class RobotContainer {
 
   /* Joysticks */
-  private final CommandXboxController joystick;
+  private final CommandXboxController m_driverController;
 
   /* Subsystems */
   public final CommandSwerveDrivetrain m_swerve;
@@ -43,7 +44,7 @@ public class RobotContainer {
   public RobotContainer() {
 
     // Initialize the Joysticks
-    joystick = new CommandXboxController(0);
+    m_driverController = new CommandXboxController(OperatorConstants.DRIVER_PORT);
 
     // Initialize the Subsystems
     m_swerve = TunerConstants.createDrivetrain(
@@ -136,16 +137,16 @@ public class RobotContainer {
 
     // Initialize all the NamedCommands
     m_driveMaintainHeadingCommand = m_superstructure.DriveMaintainHeading(
-        () -> -joystick.getLeftY(),
-        () -> -joystick.getLeftX(),
-        () -> -joystick.getRightX());
+        () -> -m_driverController.getLeftY(),
+        () -> -m_driverController.getLeftX(),
+        () -> -m_driverController.getRightX());
     m_driveToClosestReefBranchCommand = m_superstructure.DriveToClosestReefPoseCommand();
 
     // Initialize the auto chooser
     autoChooser = AutoBuilder.buildAutoChooser("Tests");
     SmartDashboard.putData("Auto Mode", autoChooser);
 
-    // Configure Joystick Bindings
+    // Configure Controller Bindings
     configureBindings();
 
     // Reset the swerve pose to a known position if we are in sim
@@ -169,7 +170,7 @@ public class RobotContainer {
 
     // Scoring Coral auto-aligns to the closest scoring branch
     // Right Bumper
-    joystick.rightBumper().whileTrue(m_driveToClosestReefBranchCommand);
+    m_driverController.rightBumper().whileTrue(m_driveToClosestReefBranchCommand);
 
     // Scoring Processor auto-aligns to the closest scoring processor
     // M2 (AKA Right Middle Bumper)
