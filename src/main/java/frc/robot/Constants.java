@@ -368,7 +368,7 @@ public class Constants {
     // Vision standard deviation for pose estimation
     public static final Matrix<N3, N1> SINGLE_TAG_STDDEV = VecBuilder.fill(4, 4, 8);
     public static final Matrix<N3, N1> MULTI_TAG_STDDEV = VecBuilder.fill(0.5, 0.5, 1);
-    public static final Matrix<N3, N1> DEFAULT_TAG_STDDEV = VecBuilder.fill(0.9, 0.9, 0.9);
+    public static final Matrix<N3, N1> DEFAULT_TAG_STDDEV = VecBuilder.fill(0.2, 0.2, Units.degreesToRadians(5.0));
 
     // Basic filtering thresholds
     public static double MAX_AMBIGUITY = 0.1;
@@ -410,7 +410,7 @@ public class Constants {
     public static final double SWERVE_DEADBAND = 0.1;
 
     // SWERVE MODULE ODOMETRY STANDARD DEVIATIONS //
-    public static final Matrix<N3, N1> ODOMETRY_STD = VecBuilder.fill(0.1, 0.1, 0.1);
+    public static final Matrix<N3, N1> ODOMETRY_STD = VecBuilder.fill(0.15, 0.15, Units.degreesToRadians(2.0));
   }
 
   public static class OperatorConstants {
