@@ -73,14 +73,8 @@ public class DriveToPoseProfPID extends Command {
         currentSpeeds, currentPose.getRotation());
 
     // Reset ProfiledPIDControllers with current position, velocity, and rotation
-    m_translationController.reset(
-        new TrapezoidProfile.State(
-            currentPose.getX(),
-            currentFieldSpeeds.vxMetersPerSecond));
-    m_strafeController.reset(
-        new TrapezoidProfile.State(
-            currentPose.getY(),
-            currentFieldSpeeds.vxMetersPerSecond));
+    m_translationController.reset(currentPose.getX());
+    m_strafeController.reset(currentPose.getY());
     m_rotationController.reset(
         new TrapezoidProfile.State(
             currentPose.getRotation().getRadians(),
