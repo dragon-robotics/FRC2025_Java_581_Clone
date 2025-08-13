@@ -135,9 +135,46 @@ public class Constants {
     }
 
     public static class CoralStation {
-      // public static final Pose2d[] BLUE_CORAL_STATION_TAGS = new Pose2d[2];
-      // public static final Pose2d[] BLUE_CORAL_STATION_LOCS = new Pose2d[6];
-      // public static final Pose2d[] RED_CORAL_STATION_LOCS = new Pose2d[6]; // Red coral station locations can be initialized from Blue coral station locations
+      public static final Pose2d[] BLUE_CORAL_STATION_TAGS = new Pose2d[2];
+      public static final Pose2d[] BLUE_CORAL_STATION_LOCS = new Pose2d[6];
+      public static final Pose2d[] RED_CORAL_STATION_LOCS = new Pose2d[6]; // Red coral station locations can be initialized from Blue coral station locations
+
+      static {
+        AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
+        double adjustY = Units.inchesToMeters(12); // Left and Right adjustment for the coral station tags
+
+        for(int tag = 12; tag < 14; tag++) {
+          BLUE_CORAL_STATION_TAGS[tag - 12] = aprilTagLayout.getTagPose(tag).get().toPose2d();
+
+          // Position 1 - Left //
+          BLUE_CORAL_STATION_LOCS[3*(tag - 12)] = new Pose2d(
+            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getX(),
+            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getY(),
+            Rotation2d.fromDegrees(BLUE_CORAL_STATION_TAGS[tag - 12].getRotation().getDegrees()))
+            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          // Position 2 - Middle //
+          BLUE_CORAL_STATION_LOCS[3*(tag - 12) + 1] = new Pose2d(
+            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getX(),
+            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getY(),
+            Rotation2d.fromDegrees(BLUE_CORAL_STATION_TAGS[tag - 12].getRotation().getDegrees()))
+            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          // Position 3 - Right //
+          BLUE_CORAL_STATION_LOCS[3*(tag - 12) + 2] = new Pose2d(
+            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getX(),
+            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getY(),
+            Rotation2d.fromDegrees(BLUE_CORAL_STATION_TAGS[tag - 12].getRotation().getDegrees()))
+            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+        }
+
+        // Initialize the red coral station locations //
+        for(int loc = 0; loc < 6; loc++) {
+          RED_CORAL_STATION_LOCS[loc] = new Pose2d(
+            FIELD_LENGTH - BLUE_CORAL_STATION_LOCS[loc].getX(),
+            FIELD_WIDTH - BLUE_CORAL_STATION_LOCS[loc].getY(),
+            BLUE_CORAL_STATION_LOCS[loc].getRotation().rotateBy(Rotation2d.kPi));
+        }
+      }
     }
 
     public static class Reef {
@@ -208,6 +245,10 @@ public class Constants {
     }
 
     public static class Barge {
+
+    }
+
+    public static class Cage {
 
     }
   }
