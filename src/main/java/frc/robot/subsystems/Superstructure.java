@@ -184,11 +184,7 @@ public class Superstructure {
       // Calculate the pose closest to the current pose
       Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
-      // Add intermediate waypoint (1 meter back from target)
-      Transform2d backwardOffset = new Transform2d(0.25, 0.0, Rotation2d.kZero);
-
-      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose.transformBy(backwardOffset))
-          .andThen(new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose));
+      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose);
 
     }, Set.of(m_swerve))
         .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
