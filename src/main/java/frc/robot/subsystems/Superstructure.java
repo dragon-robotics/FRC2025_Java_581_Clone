@@ -118,6 +118,28 @@ public class Superstructure {
         m_fieldDriveFacingAngle);
   }
 
+  private Pose2d calculateClosestPose(Pose2d currentPose, Pose2d[] targetPoses) {
+    // Calculate the pose closest to the current pose
+    Pose2d closestPose = null;
+    double minDistanceSq = Double.MAX_VALUE; // Use squared distance to avoid sqrt
+    
+    // Iterate through the list of target poses
+    for (Pose2d targetPose : targetPoses) {
+      Transform2d translationDelta = targetPose.minus(currentPose);
+
+      // Calculate the squared distance between the translations
+      double distanceSq = translationDelta.getTranslation().getNorm();
+
+      // If this pose is closer than the current minimum, update
+      if (distanceSq < minDistanceSq) {
+        minDistanceSq = distanceSq;
+        closestPose = targetPose;
+      }
+    }
+
+    return closestPose;
+  }
+
   public Command DriveToClosestReefPoseCommand() {
     return new DeferredCommand(() -> {
       // Grab the robot's current alliance
@@ -133,35 +155,13 @@ public class Superstructure {
           : FieldConstants.Reef.BLUE_REEF_BRANCHES;
 
       // Calculate the pose closest to the current pose
-      Pose2d closestPose = null;
-      double minDistanceSq = Double.MAX_VALUE; // Use squared distance to avoid sqrt
-
-      // Iterate through the list of target poses
-      for (Pose2d targetPose : targetPoses) {
-        Transform2d translationDelta = targetPose.minus(currentPose);
-
-        // Calculate the squared distance between the translations
-        double distanceSq = translationDelta.getTranslation().getNorm();
-
-        // If this pose is closer than the current minimum, update
-        if (distanceSq < minDistanceSq) {
-          minDistanceSq = distanceSq;
-          closestPose = targetPose;
-        }
-      }
-
-      // Create waypoint list
-      List<Pose2d> waypoints = new ArrayList<>();
+      Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
       // Add intermediate waypoint (1 meter back from target)
       Transform2d backwardOffset = new Transform2d(-0.25, 0.0, Rotation2d.kZero);
-      waypoints.add(closestPose.transformBy(backwardOffset));
 
-      // Add final destination
-      waypoints.add(closestPose);
-
-      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, waypoints.get(0))
-          .andThen(new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, waypoints.get(1)));
+      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose.transformBy(backwardOffset))
+          .andThen(new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose));
 
     }, Set.of(m_swerve))
         .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
@@ -182,35 +182,13 @@ public class Superstructure {
           : FieldConstants.CoralStation.BLUE_CORAL_STATION_LOCS;
 
       // Calculate the pose closest to the current pose
-      Pose2d closestPose = null;
-      double minDistanceSq = Double.MAX_VALUE; // Use squared distance to avoid sqrt
-
-      // Iterate through the list of target poses
-      for (Pose2d targetPose : targetPoses) {
-        Transform2d translationDelta = targetPose.minus(currentPose);
-
-        // Calculate the squared distance between the translations
-        double distanceSq = translationDelta.getTranslation().getNorm();
-
-        // If this pose is closer than the current minimum, update
-        if (distanceSq < minDistanceSq) {
-          minDistanceSq = distanceSq;
-          closestPose = targetPose;
-        }
-      }
-
-      // Create waypoint list
-      List<Pose2d> waypoints = new ArrayList<>();
+      Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
       // Add intermediate waypoint (1 meter back from target)
       Transform2d backwardOffset = new Transform2d(0.25, 0.0, Rotation2d.kZero);
-      waypoints.add(closestPose.transformBy(backwardOffset));
 
-      // Add final destination
-      waypoints.add(closestPose);
-
-      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, waypoints.get(0))
-          .andThen(new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, waypoints.get(1)));
+      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose.transformBy(backwardOffset))
+          .andThen(new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose));
 
     }, Set.of(m_swerve))
         .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
