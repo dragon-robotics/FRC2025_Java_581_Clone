@@ -166,4 +166,53 @@ public class Superstructure {
     }, Set.of(m_swerve))
         .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
   }
+
+  public Command DriveToClosestCoralStationPoseCommand() {
+    return new DeferredCommand(() -> {
+      // Grab the robot's current alliance
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+
+      // Grab the robot's current pose
+      Pose2d currentPose = m_swerve.getState().Pose;
+
+      // Initialize the target poses based on the alliance and whether we are left or
+      // right //
+      Pose2d[] targetPoses = alliance.isPresent() && (alliance.get() == Alliance.Red)
+          ? FieldConstants.CoralStation.RED_CORAL_STATION_LOCS
+          : FieldConstants.CoralStation.BLUE_CORAL_STATION_LOCS;
+
+      // Calculate the pose closest to the current pose
+      Pose2d closestPose = null;
+      double minDistanceSq = Double.MAX_VALUE; // Use squared distance to avoid sqrt
+
+      // Iterate through the list of target poses
+      for (Pose2d targetPose : targetPoses) {
+        Transform2d translationDelta = targetPose.minus(currentPose);
+
+        // Calculate the squared distance between the translations
+        double distanceSq = translationDelta.getTranslation().getNorm();
+
+        // If this pose is closer than the current minimum, update
+        if (distanceSq < minDistanceSq) {
+          minDistanceSq = distanceSq;
+          closestPose = targetPose;
+        }
+      }
+
+      // Create waypoint list
+      List<Pose2d> waypoints = new ArrayList<>();
+
+      // Add intermediate waypoint (1 meter back from target)
+      Transform2d backwardOffset = new Transform2d(0.25, 0.0, Rotation2d.kZero);
+      waypoints.add(closestPose.transformBy(backwardOffset));
+
+      // Add final destination
+      waypoints.add(closestPose);
+
+      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, waypoints.get(0))
+          .andThen(new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, waypoints.get(1)));
+
+    }, Set.of(m_swerve))
+        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+  }  
 }

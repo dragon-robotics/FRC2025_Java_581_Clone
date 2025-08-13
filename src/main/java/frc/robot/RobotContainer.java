@@ -37,6 +37,7 @@ public class RobotContainer {
   /* Commands */
   private final Command m_driveMaintainHeadingCommand;
   private final Command m_driveToClosestReefBranchCommand;
+  private final Command m_driveToClosestCoralStationBranchCommand;
 
   /* Path follower */
   private final SendableChooser<Command> autoChooser;
@@ -141,6 +142,7 @@ public class RobotContainer {
         () -> -m_driverController.getLeftX(),
         () -> -m_driverController.getRightX());
     m_driveToClosestReefBranchCommand = m_superstructure.DriveToClosestReefPoseCommand();
+    m_driveToClosestCoralStationBranchCommand = m_superstructure.DriveToClosestCoralStationPoseCommand();
 
     // Initialize the auto chooser
     autoChooser = AutoBuilder.buildAutoChooser("Tests");
@@ -161,6 +163,7 @@ public class RobotContainer {
 
     // Intaking Coral auto-aligns to the 1 of 6 closest coral station locations
     // Left Bumper
+    m_driverController.leftBumper().whileTrue(m_driveToClosestCoralStationBranchCommand);
 
     // Intaking Algae on the reef auto-aligns to the closest algae location
     // M1 (AKA Middle Left Bumper)
