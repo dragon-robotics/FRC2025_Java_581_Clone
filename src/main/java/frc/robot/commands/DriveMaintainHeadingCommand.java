@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -25,6 +26,7 @@ public class DriveMaintainHeadingCommand extends Command {
   private DoubleSupplier m_translationSupplier;
   private DoubleSupplier m_strafeSupplier;
   private DoubleSupplier m_rotationSupplier;
+  private BooleanSupplier m_halfSpeedSupplier;
 
   private SwerveRequest.FieldCentric m_fieldDrive;
   private SwerveRequest.FieldCentricFacingAngle m_fieldDriveFacingAngle;
@@ -40,6 +42,7 @@ public class DriveMaintainHeadingCommand extends Command {
     DoubleSupplier translationSupplier,
     DoubleSupplier strafeSupplier,
     DoubleSupplier rotationSupplier,
+    BooleanSupplier halfSpeedSupplier,
     SwerveRequest.FieldCentric fieldDrive,
     SwerveRequest.FieldCentricFacingAngle fieldDriveFacingAngle
   ) {
@@ -47,6 +50,7 @@ public class DriveMaintainHeadingCommand extends Command {
     m_translationSupplier = translationSupplier;
     m_strafeSupplier = strafeSupplier;
     m_rotationSupplier = rotationSupplier;
+    m_halfSpeedSupplier = halfSpeedSupplier;
 
     m_fieldDrive = fieldDrive;
     m_fieldDriveFacingAngle = fieldDriveFacingAngle;
@@ -85,6 +89,13 @@ public class DriveMaintainHeadingCommand extends Command {
     translation *= SwerveConstants.MAX_SPEED_METERS_PER_SECOND;
     strafe *= SwerveConstants.MAX_SPEED_METERS_PER_SECOND;
     rotation *= SwerveConstants.MAX_ANGULAR_RATE_RADIANS_PER_SECOND;
+
+    // If the half speed button is pressed, halve the translation and strafe speeds
+    if (m_halfSpeedSupplier.getAsBoolean()) {
+      translation *= 0.5;
+      strafe *= 0.5;
+      rotation *= 0.5; // Optionally halve the rotation speed as well
+    }
 
     // Check for active rotation or active rotation input //
     boolean rotationTriggered = Math.abs(rawRotation) > SwerveConstants.SWERVE_DEADBAND;

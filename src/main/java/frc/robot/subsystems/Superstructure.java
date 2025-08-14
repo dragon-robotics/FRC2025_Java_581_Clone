@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -109,13 +110,15 @@ public class Superstructure {
   public Command DriveMaintainHeading(
       DoubleSupplier translationSupplier,
       DoubleSupplier strafeSupplier,
-      DoubleSupplier rotationSupplier) {
+      DoubleSupplier rotationSupplier,
+      BooleanSupplier halfSpeedSupplier) {
 
     return new DriveMaintainHeadingCommand(
         m_swerve,
         translationSupplier,
         strafeSupplier,
         rotationSupplier,
+        halfSpeedSupplier,
         m_fieldDrive,
         m_fieldDriveFacingAngle);
   }
@@ -322,6 +325,47 @@ public class Superstructure {
             closestPose.transformBy(backwardOffset),
             new TrapezoidProfile.Constraints(4.0, 8.0),
             new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720)))
+        .andThen(
+            new DriveToPoseProfPID(
+                m_swerve,
+                m_applyRobotSpeeds,
+                closestPose,
+                new TrapezoidProfile.Constraints(1.0, 8.0),
+                new TrapezoidProfile.Constraints(1.0, 8.0),
+                new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720))));
+
+    }, Set.of(m_swerve))
+        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+  }
+
+  public Command DriveToClosestCagePoseCommand() {
+    return new DeferredCommand(() -> {
+      // Grab the robot's current alliance
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+
+      // Grab the robot's current pose
+      Pose2d currentPose = m_swerve.getState().Pose;
+
+      // Initialize the target poses based on the alliance and whether we are left or
+      // right //
+      Pose2d[] targetPoses = alliance.isPresent() && (alliance.get() == Alliance.Red)
+          ? FieldConstants.Cage.RED_CAGE_LOCS
+          : FieldConstants.Cage.BLUE_CAGE_LOCS;
+
+      // Calculate the pose closest to the current pose
+      Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
+
+      // Add intermediate waypoint (0.25 meter back from target)
+      Transform2d backwardOffset = new Transform2d(-1.5, 0.0, Rotation2d.kZero);
+
+      return
+        new DriveToPoseProfPID(
+            m_swerve,
+            m_applyRobotSpeeds,
+            closestPose.transformBy(backwardOffset),
+            new TrapezoidProfile.Constraints(2.0, 8.0),
+            new TrapezoidProfile.Constraints(2.0, 8.0),
             new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720)))
         .andThen(
             new DriveToPoseProfPID(

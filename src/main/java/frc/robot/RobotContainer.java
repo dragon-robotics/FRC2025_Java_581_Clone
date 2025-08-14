@@ -41,6 +41,7 @@ public class RobotContainer {
   private final Command m_driveToClosestCoralStationCommand;
   private final Command m_driveToProcessorCommand;
   private final Command m_driveToClosestBargeCommand;
+  private final Command m_driveToClosestCageCommand;
 
   /* Path follower */
   private final SendableChooser<Command> autoChooser;
@@ -143,12 +144,14 @@ public class RobotContainer {
     m_driveMaintainHeadingCommand = m_superstructure.DriveMaintainHeading(
         () -> -m_driverController.getLeftY(),
         () -> -m_driverController.getLeftX(),
-        () -> -m_driverController.getRightX());
+        () -> -m_driverController.getRightX(),
+        () -> m_driverController.getHID().getPOV() == 0);
     m_driveToClosestReefBranchCommand = m_superstructure.DriveToClosestReefBranchPoseCommand();
     m_driveToClosestReefAlgaeCommand = m_superstructure.DriveToClosestReefAlgaePoseCommand();
     m_driveToClosestCoralStationCommand = m_superstructure.DriveToClosestCoralStationPoseCommand();
     m_driveToProcessorCommand = m_superstructure.DriveToProcessorPoseCommand();
     m_driveToClosestBargeCommand = m_superstructure.DriveToClosestBargePoseCommand();
+    m_driveToClosestCageCommand = m_superstructure.DriveToClosestCagePoseCommand();
 
     // Initialize the auto chooser
     autoChooser = AutoBuilder.buildAutoChooser("Tests");
@@ -189,6 +192,9 @@ public class RobotContainer {
     // Scoring Barge auto-aligns to 1 of 3 closest barge locations
     // Right Trigger acting as a button
     m_driverController.rightTrigger(0.2).whileTrue(m_driveToClosestBargeCommand);
+
+    // Climb Command
+    m_driverController.a().whileTrue(m_driveToClosestCageCommand);
 
     // // Idle while the robot is disabled. This ensures the configured
     // // neutral mode is applied to the drive motors while disabled.
