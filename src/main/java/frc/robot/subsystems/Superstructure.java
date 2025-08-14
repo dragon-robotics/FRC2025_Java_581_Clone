@@ -142,247 +142,247 @@ public class Superstructure {
 
   public Command DriveToClosestReefBranchPoseCommand() {
     return new DeferredCommand(
-            () -> {
-              // Grab the robot's current alliance
-              Optional<Alliance> alliance = DriverStation.getAlliance();
+        () -> {
+          // Grab the robot's current alliance
+          Optional<Alliance> alliance = DriverStation.getAlliance();
 
-              // Grab the robot's current pose
-              Pose2d currentPose = m_swerve.getState().Pose;
+          // Grab the robot's current pose
+          Pose2d currentPose = m_swerve.getState().Pose;
 
-              // Initialize the target poses based on the alliance and whether we are left or
-              // right //
-              Pose2d[] targetPoses =
-                  alliance.isPresent() && (alliance.get() == Alliance.Red)
-                      ? FieldConstants.Reef.RED_REEF_BRANCHES
-                      : FieldConstants.Reef.BLUE_REEF_BRANCHES;
+          // Initialize the target poses based on the alliance and whether we are left or
+          // right //
+          Pose2d[] targetPoses =
+              alliance.isPresent() && (alliance.get() == Alliance.Red)
+                  ? FieldConstants.Reef.RED_REEF_BRANCHES
+                  : FieldConstants.Reef.BLUE_REEF_BRANCHES;
 
-              // Calculate the pose closest to the current pose
-              Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
+          // Calculate the pose closest to the current pose
+          Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
-              // Add intermediate waypoint (1 meter back from target)
-              Transform2d backwardOffset = new Transform2d(-0.25, 0.0, Rotation2d.kZero);
+          // Add intermediate waypoint (1 meter back from target)
+          Transform2d backwardOffset = new Transform2d(-0.25, 0.0, Rotation2d.kZero);
 
-              return new DriveToPoseProfPID(
+          return new DriveToPoseProfPID(
+                  m_swerve,
+                  m_applyRobotSpeeds,
+                  closestPose.transformBy(backwardOffset),
+                  new TrapezoidProfile.Constraints(4.0, 8.0),
+                  new TrapezoidProfile.Constraints(4.0, 8.0),
+                  new TrapezoidProfile.Constraints(
+                      Units.degreesToRadians(540), Units.degreesToRadians(720)))
+              .andThen(
+                  new DriveToPoseProfPID(
                       m_swerve,
                       m_applyRobotSpeeds,
-                      closestPose.transformBy(backwardOffset),
+                      closestPose,
                       new TrapezoidProfile.Constraints(4.0, 8.0),
                       new TrapezoidProfile.Constraints(4.0, 8.0),
                       new TrapezoidProfile.Constraints(
-                          Units.degreesToRadians(540), Units.degreesToRadians(720)))
-                  .andThen(
-                      new DriveToPoseProfPID(
-                          m_swerve,
-                          m_applyRobotSpeeds,
-                          closestPose,
-                          new TrapezoidProfile.Constraints(4.0, 8.0),
-                          new TrapezoidProfile.Constraints(4.0, 8.0),
-                          new TrapezoidProfile.Constraints(
-                              Units.degreesToRadians(540), Units.degreesToRadians(720))));
-            },
-            Set.of(m_swerve));
+                          Units.degreesToRadians(540), Units.degreesToRadians(720))));
+        },
+        Set.of(m_swerve));
   }
 
   public Command DriveToClosestReefAlgaePoseCommand() {
     return new DeferredCommand(
-            () -> {
-              // Grab the robot's current alliance
-              Optional<Alliance> alliance = DriverStation.getAlliance();
+        () -> {
+          // Grab the robot's current alliance
+          Optional<Alliance> alliance = DriverStation.getAlliance();
 
-              // Grab the robot's current pose
-              Pose2d currentPose = m_swerve.getState().Pose;
+          // Grab the robot's current pose
+          Pose2d currentPose = m_swerve.getState().Pose;
 
-              // Initialize the target poses based on the alliance and whether we are left or
-              // right //
-              Pose2d[] targetPoses =
-                  alliance.isPresent() && (alliance.get() == Alliance.Red)
-                      ? FieldConstants.Reef.RED_REEF_ALGAE
-                      : FieldConstants.Reef.BLUE_REEF_ALGAE;
+          // Initialize the target poses based on the alliance and whether we are left or
+          // right //
+          Pose2d[] targetPoses =
+              alliance.isPresent() && (alliance.get() == Alliance.Red)
+                  ? FieldConstants.Reef.RED_REEF_ALGAE
+                  : FieldConstants.Reef.BLUE_REEF_ALGAE;
 
-              // Calculate the pose closest to the current pose
-              Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
+          // Calculate the pose closest to the current pose
+          Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
-              // Add intermediate waypoint (0.25 meter back from target)
-              Transform2d backwardOffset = new Transform2d(-0.25, 0.0, Rotation2d.kZero);
+          // Add intermediate waypoint (0.25 meter back from target)
+          Transform2d backwardOffset = new Transform2d(-0.25, 0.0, Rotation2d.kZero);
 
-              return new DriveToPoseProfPID(
+          return new DriveToPoseProfPID(
+                  m_swerve,
+                  m_applyRobotSpeeds,
+                  closestPose.transformBy(backwardOffset),
+                  new TrapezoidProfile.Constraints(4.0, 8.0),
+                  new TrapezoidProfile.Constraints(4.0, 8.0),
+                  new TrapezoidProfile.Constraints(
+                      Units.degreesToRadians(540), Units.degreesToRadians(720)))
+              .andThen(
+                  new DriveToPoseProfPID(
                       m_swerve,
                       m_applyRobotSpeeds,
-                      closestPose.transformBy(backwardOffset),
+                      closestPose,
                       new TrapezoidProfile.Constraints(4.0, 8.0),
                       new TrapezoidProfile.Constraints(4.0, 8.0),
                       new TrapezoidProfile.Constraints(
-                          Units.degreesToRadians(540), Units.degreesToRadians(720)))
-                  .andThen(
-                      new DriveToPoseProfPID(
-                          m_swerve,
-                          m_applyRobotSpeeds,
-                          closestPose,
-                          new TrapezoidProfile.Constraints(4.0, 8.0),
-                          new TrapezoidProfile.Constraints(4.0, 8.0),
-                          new TrapezoidProfile.Constraints(
-                              Units.degreesToRadians(540), Units.degreesToRadians(720))));
-            },
-            Set.of(m_swerve));
+                          Units.degreesToRadians(540), Units.degreesToRadians(720))));
+        },
+        Set.of(m_swerve));
   }
 
   public Command DriveToClosestCoralStationPoseCommand() {
     return new DeferredCommand(
-            () -> {
-              // Grab the robot's current alliance
-              Optional<Alliance> alliance = DriverStation.getAlliance();
+        () -> {
+          // Grab the robot's current alliance
+          Optional<Alliance> alliance = DriverStation.getAlliance();
 
-              // Grab the robot's current pose
-              Pose2d currentPose = m_swerve.getState().Pose;
+          // Grab the robot's current pose
+          Pose2d currentPose = m_swerve.getState().Pose;
 
-              // Initialize the target poses based on the alliance and whether we are left or
-              // right //
-              Pose2d[] targetPoses =
-                  alliance.isPresent() && (alliance.get() == Alliance.Red)
-                      ? FieldConstants.CoralStation.RED_CORAL_STATION_LOCS
-                      : FieldConstants.CoralStation.BLUE_CORAL_STATION_LOCS;
+          // Initialize the target poses based on the alliance and whether we are left or
+          // right //
+          Pose2d[] targetPoses =
+              alliance.isPresent() && (alliance.get() == Alliance.Red)
+                  ? FieldConstants.CoralStation.RED_CORAL_STATION_LOCS
+                  : FieldConstants.CoralStation.BLUE_CORAL_STATION_LOCS;
 
-              // Calculate the pose closest to the current pose
-              Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
+          // Calculate the pose closest to the current pose
+          Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
-              return new DriveToPoseProfPID(
-                  m_swerve,
-                  m_applyRobotSpeeds,
-                  closestPose,
-                  new TrapezoidProfile.Constraints(4.0, 8.0),
-                  new TrapezoidProfile.Constraints(4.0, 8.0),
-                  new TrapezoidProfile.Constraints(
-                      Units.degreesToRadians(540), Units.degreesToRadians(720)));
-            },
-            Set.of(m_swerve));
+          return new DriveToPoseProfPID(
+              m_swerve,
+              m_applyRobotSpeeds,
+              closestPose,
+              new TrapezoidProfile.Constraints(4.0, 8.0),
+              new TrapezoidProfile.Constraints(4.0, 8.0),
+              new TrapezoidProfile.Constraints(
+                  Units.degreesToRadians(540), Units.degreesToRadians(720)));
+        },
+        Set.of(m_swerve));
   }
 
   public Command DriveToProcessorPoseCommand() {
     return new DeferredCommand(
-            () -> {
-              // Grab the robot's current alliance
-              Optional<Alliance> alliance = DriverStation.getAlliance();
+        () -> {
+          // Grab the robot's current alliance
+          Optional<Alliance> alliance = DriverStation.getAlliance();
 
-              // Grab the robot's current pose
-              Pose2d currentPose = m_swerve.getState().Pose;
+          // Grab the robot's current pose
+          Pose2d currentPose = m_swerve.getState().Pose;
 
-              // Initialize the target poses based on the alliance and whether we are left or
-              // right //
-              Pose2d targetPose =
-                  alliance.isPresent() && (alliance.get() == Alliance.Red)
-                      ? FieldConstants.Processor.RED_PROCESSOR_LOC
-                      : FieldConstants.Processor.BLUE_PROCESSOR_LOC;
+          // Initialize the target poses based on the alliance and whether we are left or
+          // right //
+          Pose2d targetPose =
+              alliance.isPresent() && (alliance.get() == Alliance.Red)
+                  ? FieldConstants.Processor.RED_PROCESSOR_LOC
+                  : FieldConstants.Processor.BLUE_PROCESSOR_LOC;
 
-              // Calculate the pose closest to the current pose
-              Pose2d closestPose = calculateClosestPose(currentPose, new Pose2d[] {targetPose});
+          // Calculate the pose closest to the current pose
+          Pose2d closestPose = calculateClosestPose(currentPose, new Pose2d[] {targetPose});
 
-              // Add intermediate waypoint (0.25 meter back from target)
-              Transform2d backwardOffset = new Transform2d(-0.5, 0.0, Rotation2d.kZero);
+          // Add intermediate waypoint (0.25 meter back from target)
+          Transform2d backwardOffset = new Transform2d(-0.5, 0.0, Rotation2d.kZero);
 
-              return new DriveToPoseProfPID(
+          return new DriveToPoseProfPID(
+                  m_swerve,
+                  m_applyRobotSpeeds,
+                  closestPose.transformBy(backwardOffset),
+                  new TrapezoidProfile.Constraints(4.0, 8.0),
+                  new TrapezoidProfile.Constraints(4.0, 8.0),
+                  new TrapezoidProfile.Constraints(
+                      Units.degreesToRadians(540), Units.degreesToRadians(720)))
+              .andThen(
+                  new DriveToPoseProfPID(
                       m_swerve,
                       m_applyRobotSpeeds,
-                      closestPose.transformBy(backwardOffset),
-                      new TrapezoidProfile.Constraints(4.0, 8.0),
-                      new TrapezoidProfile.Constraints(4.0, 8.0),
+                      closestPose,
+                      new TrapezoidProfile.Constraints(1.0, 8.0),
+                      new TrapezoidProfile.Constraints(1.0, 8.0),
                       new TrapezoidProfile.Constraints(
-                          Units.degreesToRadians(540), Units.degreesToRadians(720)))
-                  .andThen(
-                      new DriveToPoseProfPID(
-                          m_swerve,
-                          m_applyRobotSpeeds,
-                          closestPose,
-                          new TrapezoidProfile.Constraints(1.0, 8.0),
-                          new TrapezoidProfile.Constraints(1.0, 8.0),
-                          new TrapezoidProfile.Constraints(
-                              Units.degreesToRadians(540), Units.degreesToRadians(720))));
-            },
-            Set.of(m_swerve));
+                          Units.degreesToRadians(540), Units.degreesToRadians(720))));
+        },
+        Set.of(m_swerve));
   }
 
   public Command DriveToClosestBargePoseCommand() {
     return new DeferredCommand(
-            () -> {
-              // Grab the robot's current alliance
-              Optional<Alliance> alliance = DriverStation.getAlliance();
+        () -> {
+          // Grab the robot's current alliance
+          Optional<Alliance> alliance = DriverStation.getAlliance();
 
-              // Grab the robot's current pose
-              Pose2d currentPose = m_swerve.getState().Pose;
+          // Grab the robot's current pose
+          Pose2d currentPose = m_swerve.getState().Pose;
 
-              // Initialize the target poses based on the alliance and whether we are left or
-              // right //
-              Pose2d[] targetPoses =
-                  alliance.isPresent() && (alliance.get() == Alliance.Red)
-                      ? FieldConstants.Barge.RED_BARGE_LOCS
-                      : FieldConstants.Barge.BLUE_BARGE_LOCS;
+          // Initialize the target poses based on the alliance and whether we are left or
+          // right //
+          Pose2d[] targetPoses =
+              alliance.isPresent() && (alliance.get() == Alliance.Red)
+                  ? FieldConstants.Barge.RED_BARGE_LOCS
+                  : FieldConstants.Barge.BLUE_BARGE_LOCS;
 
-              // Calculate the pose closest to the current pose
-              Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
+          // Calculate the pose closest to the current pose
+          Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
-              // Add intermediate waypoint (0.25 meter back from target)
-              Transform2d backwardOffset = new Transform2d(-1.0, 0.0, Rotation2d.kZero);
+          // Add intermediate waypoint (0.25 meter back from target)
+          Transform2d backwardOffset = new Transform2d(-1.0, 0.0, Rotation2d.kZero);
 
-              return new DriveToPoseProfPID(
+          return new DriveToPoseProfPID(
+                  m_swerve,
+                  m_applyRobotSpeeds,
+                  closestPose.transformBy(backwardOffset),
+                  new TrapezoidProfile.Constraints(4.0, 8.0),
+                  new TrapezoidProfile.Constraints(4.0, 8.0),
+                  new TrapezoidProfile.Constraints(
+                      Units.degreesToRadians(540), Units.degreesToRadians(720)))
+              .andThen(
+                  new DriveToPoseProfPID(
                       m_swerve,
                       m_applyRobotSpeeds,
-                      closestPose.transformBy(backwardOffset),
-                      new TrapezoidProfile.Constraints(4.0, 8.0),
-                      new TrapezoidProfile.Constraints(4.0, 8.0),
+                      closestPose,
+                      new TrapezoidProfile.Constraints(1.0, 8.0),
+                      new TrapezoidProfile.Constraints(1.0, 8.0),
                       new TrapezoidProfile.Constraints(
-                          Units.degreesToRadians(540), Units.degreesToRadians(720)))
-                  .andThen(
-                      new DriveToPoseProfPID(
-                          m_swerve,
-                          m_applyRobotSpeeds,
-                          closestPose,
-                          new TrapezoidProfile.Constraints(1.0, 8.0),
-                          new TrapezoidProfile.Constraints(1.0, 8.0),
-                          new TrapezoidProfile.Constraints(
-                              Units.degreesToRadians(540), Units.degreesToRadians(720))));
-            },
-            Set.of(m_swerve));
+                          Units.degreesToRadians(540), Units.degreesToRadians(720))));
+        },
+        Set.of(m_swerve));
   }
 
   public Command DriveToClosestCagePoseCommand() {
     return new DeferredCommand(
-            () -> {
-              // Grab the robot's current alliance
-              Optional<Alliance> alliance = DriverStation.getAlliance();
+        () -> {
+          // Grab the robot's current alliance
+          Optional<Alliance> alliance = DriverStation.getAlliance();
 
-              // Grab the robot's current pose
-              Pose2d currentPose = m_swerve.getState().Pose;
+          // Grab the robot's current pose
+          Pose2d currentPose = m_swerve.getState().Pose;
 
-              // Initialize the target poses based on the alliance and whether we are left or
-              // right //
-              Pose2d[] targetPoses =
-                  alliance.isPresent() && (alliance.get() == Alliance.Red)
-                      ? FieldConstants.Cage.RED_CAGE_LOCS
-                      : FieldConstants.Cage.BLUE_CAGE_LOCS;
+          // Initialize the target poses based on the alliance and whether we are left or
+          // right //
+          Pose2d[] targetPoses =
+              alliance.isPresent() && (alliance.get() == Alliance.Red)
+                  ? FieldConstants.Cage.RED_CAGE_LOCS
+                  : FieldConstants.Cage.BLUE_CAGE_LOCS;
 
-              // Calculate the pose closest to the current pose
-              Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
+          // Calculate the pose closest to the current pose
+          Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
-              // Add intermediate waypoint (0.25 meter back from target)
-              Transform2d backwardOffset = new Transform2d(-1.5, 0.0, Rotation2d.kZero);
+          // Add intermediate waypoint (0.25 meter back from target)
+          Transform2d backwardOffset = new Transform2d(-1.5, 0.0, Rotation2d.kZero);
 
-              return new DriveToPoseProfPID(
+          return new DriveToPoseProfPID(
+                  m_swerve,
+                  m_applyRobotSpeeds,
+                  closestPose.transformBy(backwardOffset),
+                  new TrapezoidProfile.Constraints(2.0, 8.0),
+                  new TrapezoidProfile.Constraints(2.0, 8.0),
+                  new TrapezoidProfile.Constraints(
+                      Units.degreesToRadians(540), Units.degreesToRadians(720)))
+              .andThen(
+                  new DriveToPoseProfPID(
                       m_swerve,
                       m_applyRobotSpeeds,
-                      closestPose.transformBy(backwardOffset),
-                      new TrapezoidProfile.Constraints(2.0, 8.0),
-                      new TrapezoidProfile.Constraints(2.0, 8.0),
+                      closestPose,
+                      new TrapezoidProfile.Constraints(1.0, 8.0),
+                      new TrapezoidProfile.Constraints(1.0, 8.0),
                       new TrapezoidProfile.Constraints(
-                          Units.degreesToRadians(540), Units.degreesToRadians(720)))
-                  .andThen(
-                      new DriveToPoseProfPID(
-                          m_swerve,
-                          m_applyRobotSpeeds,
-                          closestPose,
-                          new TrapezoidProfile.Constraints(1.0, 8.0),
-                          new TrapezoidProfile.Constraints(1.0, 8.0),
-                          new TrapezoidProfile.Constraints(
-                              Units.degreesToRadians(540), Units.degreesToRadians(720))));
-            },
-            Set.of(m_swerve));
+                          Units.degreesToRadians(540), Units.degreesToRadians(720))));
+        },
+        Set.of(m_swerve));
   }
 }
