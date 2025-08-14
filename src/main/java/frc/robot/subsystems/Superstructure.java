@@ -13,6 +13,8 @@ import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -140,7 +142,7 @@ public class Superstructure {
     return closestPose;
   }
 
-  public Command DriveToClosestReefPoseCommand() {
+  public Command DriveToClosestReefBranchPoseCommand() {
     return new DeferredCommand(() -> {
       // Grab the robot's current alliance
       Optional<Alliance> alliance = DriverStation.getAlliance();
@@ -160,8 +162,63 @@ public class Superstructure {
       // Add intermediate waypoint (1 meter back from target)
       Transform2d backwardOffset = new Transform2d(-0.25, 0.0, Rotation2d.kZero);
 
-      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose.transformBy(backwardOffset))
-          .andThen(new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose));
+      return
+        new DriveToPoseProfPID(
+            m_swerve,
+            m_applyRobotSpeeds,
+            closestPose.transformBy(backwardOffset),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720)))
+        .andThen(
+            new DriveToPoseProfPID(
+                m_swerve,
+                m_applyRobotSpeeds,
+                closestPose,
+                new TrapezoidProfile.Constraints(4.0, 8.0),
+                new TrapezoidProfile.Constraints(4.0, 8.0),
+                new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720))));
+
+    }, Set.of(m_swerve))
+        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+  }
+
+  public Command DriveToClosestReefAlgaePoseCommand() {
+    return new DeferredCommand(() -> {
+      // Grab the robot's current alliance
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+
+      // Grab the robot's current pose
+      Pose2d currentPose = m_swerve.getState().Pose;
+
+      // Initialize the target poses based on the alliance and whether we are left or
+      // right //
+      Pose2d[] targetPoses = alliance.isPresent() && (alliance.get() == Alliance.Red)
+          ? FieldConstants.Reef.RED_REEF_ALGAE
+          : FieldConstants.Reef.BLUE_REEF_ALGAE;
+
+      // Calculate the pose closest to the current pose
+      Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
+
+      // Add intermediate waypoint (0.25 meter back from target)
+      Transform2d backwardOffset = new Transform2d(-0.25, 0.0, Rotation2d.kZero);
+
+      return
+        new DriveToPoseProfPID(
+            m_swerve,
+            m_applyRobotSpeeds,
+            closestPose.transformBy(backwardOffset),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720)))
+        .andThen(
+            new DriveToPoseProfPID(
+                m_swerve,
+                m_applyRobotSpeeds,
+                closestPose,
+                new TrapezoidProfile.Constraints(4.0, 8.0),
+                new TrapezoidProfile.Constraints(4.0, 8.0),
+                new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720))));
 
     }, Set.of(m_swerve))
         .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
@@ -184,7 +241,55 @@ public class Superstructure {
       // Calculate the pose closest to the current pose
       Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
 
-      return new DriveToPoseProfPID(m_swerve, m_applyRobotSpeeds, closestPose);
+      return
+        new DriveToPoseProfPID(
+            m_swerve,
+            m_applyRobotSpeeds,
+            closestPose,
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720)));
+
+    }, Set.of(m_swerve))
+        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+  }
+
+  public Command DriveToProcessorPoseCommand() {
+    return new DeferredCommand(() -> {
+      // Grab the robot's current alliance
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+
+      // Grab the robot's current pose
+      Pose2d currentPose = m_swerve.getState().Pose;
+
+      // Initialize the target poses based on the alliance and whether we are left or
+      // right //
+      Pose2d targetPose = alliance.isPresent() && (alliance.get() == Alliance.Red)
+          ? FieldConstants.Processor.RED_PROCESSOR_LOC
+          : FieldConstants.Processor.BLUE_PROCESSOR_LOC;
+
+      // Calculate the pose closest to the current pose
+      Pose2d closestPose = calculateClosestPose(currentPose, new Pose2d[]{targetPose});
+
+      // Add intermediate waypoint (0.25 meter back from target)
+      Transform2d backwardOffset = new Transform2d(-0.5, 0.0, Rotation2d.kZero);
+
+      return
+        new DriveToPoseProfPID(
+            m_swerve,
+            m_applyRobotSpeeds,
+            closestPose.transformBy(backwardOffset),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720)))
+        .andThen(
+            new DriveToPoseProfPID(
+                m_swerve,
+                m_applyRobotSpeeds,
+                closestPose,
+                new TrapezoidProfile.Constraints(1.0, 8.0),
+                new TrapezoidProfile.Constraints(1.0, 8.0),
+                new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720))));
 
     }, Set.of(m_swerve))
         .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));

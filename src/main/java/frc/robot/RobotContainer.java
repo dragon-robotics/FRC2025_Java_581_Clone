@@ -37,7 +37,9 @@ public class RobotContainer {
   /* Commands */
   private final Command m_driveMaintainHeadingCommand;
   private final Command m_driveToClosestReefBranchCommand;
+  private final Command m_driveToClosestReefAlgaeCommand;
   private final Command m_driveToClosestCoralStationCommand;
+  private final Command m_driveToProcessorCommand;
 
   /* Path follower */
   private final SendableChooser<Command> autoChooser;
@@ -141,8 +143,10 @@ public class RobotContainer {
         () -> -m_driverController.getLeftY(),
         () -> -m_driverController.getLeftX(),
         () -> -m_driverController.getRightX());
-    m_driveToClosestReefBranchCommand = m_superstructure.DriveToClosestReefPoseCommand();
+    m_driveToClosestReefBranchCommand = m_superstructure.DriveToClosestReefBranchPoseCommand();
+    m_driveToClosestReefAlgaeCommand = m_superstructure.DriveToClosestReefAlgaePoseCommand();
     m_driveToClosestCoralStationCommand = m_superstructure.DriveToClosestCoralStationPoseCommand();
+    m_driveToProcessorCommand = m_superstructure.DriveToProcessorPoseCommand();
 
     // Initialize the auto chooser
     autoChooser = AutoBuilder.buildAutoChooser("Tests");
@@ -167,6 +171,7 @@ public class RobotContainer {
 
     // Intaking Algae on the reef auto-aligns to the closest algae location
     // M1 (AKA Middle Left Bumper)
+    m_driverController.leftStick().whileTrue(m_driveToClosestReefAlgaeCommand);
 
     // Intaking Algae on the floor auto-aligns to the closest algae
     // Left Trigger acting as a button
@@ -177,6 +182,7 @@ public class RobotContainer {
 
     // Scoring Processor auto-aligns to the closest scoring processor
     // M2 (AKA Right Middle Bumper)
+    m_driverController.rightStick().whileTrue(m_driveToProcessorCommand);
 
     // Scoring Barge auto-aligns to 1 of 4 closest barge locations
     // Right Trigger acting as a button
