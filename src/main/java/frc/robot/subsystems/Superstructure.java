@@ -41,9 +41,6 @@ public class Superstructure {
   /* Used for Phoenix6 Logging */
   private final Telemetry logger;
 
-  /* Used for maintaining heading */
-  private Optional<Rotation2d> currentHeading = Optional.empty();
-
   /** Creates a new Superstructure. */
   public Superstructure(CommandSwerveDrivetrain swerve, VisionSubsystem vision) {
     m_swerve = swerve;
@@ -183,8 +180,7 @@ public class Superstructure {
                           new TrapezoidProfile.Constraints(
                               Units.degreesToRadians(540), Units.degreesToRadians(720))));
             },
-            Set.of(m_swerve))
-        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+            Set.of(m_swerve));
   }
 
   public Command DriveToClosestReefAlgaePoseCommand() {
@@ -227,8 +223,7 @@ public class Superstructure {
                           new TrapezoidProfile.Constraints(
                               Units.degreesToRadians(540), Units.degreesToRadians(720))));
             },
-            Set.of(m_swerve))
-        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+            Set.of(m_swerve));
   }
 
   public Command DriveToClosestCoralStationPoseCommand() {
@@ -259,8 +254,7 @@ public class Superstructure {
                   new TrapezoidProfile.Constraints(
                       Units.degreesToRadians(540), Units.degreesToRadians(720)));
             },
-            Set.of(m_swerve))
-        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+            Set.of(m_swerve));
   }
 
   public Command DriveToProcessorPoseCommand() {
@@ -303,8 +297,7 @@ public class Superstructure {
                           new TrapezoidProfile.Constraints(
                               Units.degreesToRadians(540), Units.degreesToRadians(720))));
             },
-            Set.of(m_swerve))
-        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+            Set.of(m_swerve));
   }
 
   public Command DriveToClosestBargePoseCommand() {
@@ -347,8 +340,7 @@ public class Superstructure {
                           new TrapezoidProfile.Constraints(
                               Units.degreesToRadians(540), Units.degreesToRadians(720))));
             },
-            Set.of(m_swerve))
-        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+            Set.of(m_swerve));
   }
 
   public Command DriveToClosestCagePoseCommand() {
@@ -391,7 +383,6 @@ public class Superstructure {
                           new TrapezoidProfile.Constraints(
                               Units.degreesToRadians(540), Units.degreesToRadians(720))));
             },
-            Set.of(m_swerve))
-        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+            Set.of(m_swerve));
   }
 }
