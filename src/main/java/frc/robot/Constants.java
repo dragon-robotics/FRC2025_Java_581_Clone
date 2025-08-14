@@ -236,12 +236,31 @@ public class Constants {
     }
 
     public static class Processor {
-      // public static final Pose2d BLUE_PROCESSOR_TAG;
-      // public static final Pose2d RED_PROCESSOR_TAG;
+      public static final Pose2d BLUE_PROCESSOR_TAG;
+      public static final Pose2d BLUE_PROCESSOR_LOC;
+      public static final Pose2d RED_PROCESSOR_LOC;
 
-      // static {
+      static {
+        // Get the Apriltag layout //
+        AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
 
-      // }
+        // Initialize the blue tag //
+        BLUE_PROCESSOR_TAG = aprilTagLayout.getTagPose(16).get().toPose2d();
+        
+        // Initialize the blue processor location //
+        BLUE_PROCESSOR_LOC = new Pose2d(
+          BLUE_PROCESSOR_TAG.transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getX(),
+          BLUE_PROCESSOR_TAG.transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getY(),
+          Rotation2d.fromDegrees(BLUE_PROCESSOR_TAG.getRotation().getDegrees() + 180))
+          .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+
+        // Initialize the red tag based on the blue tag //
+        RED_PROCESSOR_LOC = new Pose2d(
+          FIELD_LENGTH - BLUE_PROCESSOR_LOC.getX(),
+          FIELD_WIDTH - BLUE_PROCESSOR_LOC.getY(),
+          BLUE_PROCESSOR_LOC.getRotation().rotateBy(Rotation2d.kPi));
+      }
     }
 
     public static class Barge {
