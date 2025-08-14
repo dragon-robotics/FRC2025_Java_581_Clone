@@ -4,15 +4,13 @@
 
 package frc.robot;
 
-import org.ironmaple.simulation.SimulatedArena;
-
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathfindingCommand;
-
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import org.ironmaple.simulation.SimulatedArena;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -30,7 +28,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    CommandScheduler.getInstance().run(); 
+    CommandScheduler.getInstance().run();
   }
 
   @Override
@@ -83,7 +81,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {
-    DogLog.log("Simulation/CoralPoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
-    DogLog.log("Simulation/AlgaePoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));    
+    DogLog.log(
+        "Simulation/CoralPoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+    DogLog.log(
+        "Simulation/AlgaePoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
   }
 }

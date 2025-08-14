@@ -5,13 +5,11 @@
 package frc.robot.commands;
 
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
-
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -39,14 +37,11 @@ public class DriveToPoseProfPID extends Command {
     m_targetPose = targetPose;
 
     // Initialize the Profiled PID controllers
-    m_translationController = new ProfiledPIDController(
-        4.0, 0.0, 0.0, translationConstraints);
+    m_translationController = new ProfiledPIDController(4.0, 0.0, 0.0, translationConstraints);
     // Initialize the Profiled PID controllers
-    m_strafeController = new ProfiledPIDController(
-        4.0, 0.0, 0.0, strafeConstraints);
+    m_strafeController = new ProfiledPIDController(4.0, 0.0, 0.0, strafeConstraints);
     // Initialize the Profiled PID controllers
-    m_rotationController = new ProfiledPIDController(
-        4.0, 0.0, 0.0, rotationConstraints);
+    m_rotationController = new ProfiledPIDController(4.0, 0.0, 0.0, rotationConstraints);
 
     m_translationController.setTolerance(0.01);
     m_strafeController.setTolerance(0.01);
@@ -67,16 +62,15 @@ public class DriveToPoseProfPID extends Command {
     ChassisSpeeds currentSpeeds = m_swerve.getState().Speeds;
 
     // Convert robot speeds to field speeds
-    ChassisSpeeds currentFieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-        currentSpeeds, currentPose.getRotation());
+    ChassisSpeeds currentFieldSpeeds =
+        ChassisSpeeds.fromRobotRelativeSpeeds(currentSpeeds, currentPose.getRotation());
 
     // Reset ProfiledPIDControllers with current position, velocity, and rotation
     m_translationController.reset(currentPose.getX());
     m_strafeController.reset(currentPose.getY());
     m_rotationController.reset(
         new TrapezoidProfile.State(
-            currentPose.getRotation().getRadians(),
-            currentFieldSpeeds.omegaRadiansPerSecond));
+            currentPose.getRotation().getRadians(), currentFieldSpeeds.omegaRadiansPerSecond));
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -86,18 +80,20 @@ public class DriveToPoseProfPID extends Command {
     Pose2d currentPose = m_swerve.getState().Pose;
 
     // Calculate translation, strafe, and rotation speeds
-    double translationSpeed = m_translationController.calculate(
-        m_swerve.getState().Pose.getX(), m_targetPose.getX());
+    double translationSpeed =
+        m_translationController.calculate(m_swerve.getState().Pose.getX(), m_targetPose.getX());
 
-    double strafeSpeed = m_strafeController.calculate(
-        m_swerve.getState().Pose.getY(), m_targetPose.getY());
+    double strafeSpeed =
+        m_strafeController.calculate(m_swerve.getState().Pose.getY(), m_targetPose.getY());
 
-    double rotationSpeed = m_rotationController.calculate(
-        m_swerve.getState().Pose.getRotation().getRadians(),
-        m_targetPose.getRotation().getRadians());
+    double rotationSpeed =
+        m_rotationController.calculate(
+            m_swerve.getState().Pose.getRotation().getRadians(),
+            m_targetPose.getRotation().getRadians());
 
-    ChassisSpeeds targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-        translationSpeed, strafeSpeed, rotationSpeed, currentPose.getRotation());
+    ChassisSpeeds targetSpeeds =
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            translationSpeed, strafeSpeed, rotationSpeed, currentPose.getRotation());
 
     // Set the robot speeds
     m_swerve.setControl(m_robotSpeeds.withSpeeds(targetSpeeds));
@@ -113,8 +109,8 @@ public class DriveToPoseProfPID extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return m_translationController.atGoal() &&
-        m_strafeController.atGoal() &&
-        m_rotationController.atGoal();
+    return m_translationController.atGoal()
+        && m_strafeController.atGoal()
+        && m_rotationController.atGoal();
   }
 }

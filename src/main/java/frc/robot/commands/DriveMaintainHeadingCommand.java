@@ -4,12 +4,7 @@
 
 package frc.robot.commands;
 
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -18,6 +13,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class DriveMaintainHeadingCommand extends Command {
@@ -31,21 +29,22 @@ public class DriveMaintainHeadingCommand extends Command {
   private SwerveRequest.FieldCentric m_fieldDrive;
   private SwerveRequest.FieldCentricFacingAngle m_fieldDriveFacingAngle;
 
-  /** The last time the rotation was triggered, used to determine if the robot is actively rotating. */
+  /**
+   * The last time the rotation was triggered, used to determine if the robot is actively rotating.
+   */
   private double rotationLastTriggered;
 
   private Optional<Rotation2d> currentHeading;
 
   /** Creates a new DriveMaintainingHeadingCommand. */
   public DriveMaintainHeadingCommand(
-    CommandSwerveDrivetrain swerve,
-    DoubleSupplier translationSupplier,
-    DoubleSupplier strafeSupplier,
-    DoubleSupplier rotationSupplier,
-    BooleanSupplier halfSpeedSupplier,
-    SwerveRequest.FieldCentric fieldDrive,
-    SwerveRequest.FieldCentricFacingAngle fieldDriveFacingAngle
-  ) {
+      CommandSwerveDrivetrain swerve,
+      DoubleSupplier translationSupplier,
+      DoubleSupplier strafeSupplier,
+      DoubleSupplier rotationSupplier,
+      BooleanSupplier halfSpeedSupplier,
+      SwerveRequest.FieldCentric fieldDrive,
+      SwerveRequest.FieldCentricFacingAngle fieldDriveFacingAngle) {
     m_swerve = swerve;
     m_translationSupplier = translationSupplier;
     m_strafeSupplier = strafeSupplier;
@@ -105,18 +104,17 @@ public class DriveMaintainHeadingCommand extends Command {
 
     // Active rotation = rotation triggered in the last 100ms and greater than 10deg/s angular speed
     boolean rotationActive =
-      MathUtil.isNear(rotationLastTriggered, Timer.getFPGATimestamp(), 0.1) &&
-      (Math.abs(m_swerve.getState().Speeds.omegaRadiansPerSecond) > Math.toRadians(10));
+        MathUtil.isNear(rotationLastTriggered, Timer.getFPGATimestamp(), 0.1)
+            && (Math.abs(m_swerve.getState().Speeds.omegaRadiansPerSecond) > Math.toRadians(10));
 
-    if(rotationTriggered || rotationActive){
+    if (rotationTriggered || rotationActive) {
       // If the rotation is triggered or active, we need to set the current heading null
       currentHeading = Optional.empty();
       m_swerve.setControl(
-        m_fieldDrive
-          .withVelocityX(translation)
-          .withVelocityY(strafe)
-          .withRotationalRate(rotation)
-      );
+          m_fieldDrive
+              .withVelocityX(translation)
+              .withVelocityY(strafe)
+              .withRotationalRate(rotation));
     } else {
       // If the rotation is not triggered, we can use the current heading
       if (currentHeading.isEmpty()) {
@@ -126,17 +124,18 @@ public class DriveMaintainHeadingCommand extends Command {
 
       // Grab the alliance color and adjust the current heading accordingly
       currentHeading =
-        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ?
-          // If the alliance color is red, we need to flip the heading
-          Optional.of(m_swerve.getState().Pose.getRotation().rotateBy(Rotation2d.fromDegrees(180))) :
-          Optional.of(m_swerve.getState().Pose.getRotation());
+          DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+              ?
+              // If the alliance color is red, we need to flip the heading
+              Optional.of(
+                  m_swerve.getState().Pose.getRotation().rotateBy(Rotation2d.fromDegrees(180)))
+              : Optional.of(m_swerve.getState().Pose.getRotation());
 
       m_swerve.setControl(
-        m_fieldDriveFacingAngle
-          .withVelocityX(translation)
-          .withVelocityY(strafe)
-          .withTargetDirection(currentHeading.get())
-      );
+          m_fieldDriveFacingAngle
+              .withVelocityX(translation)
+              .withVelocityY(strafe)
+              .withTargetDirection(currentHeading.get()));
     }
   }
 
