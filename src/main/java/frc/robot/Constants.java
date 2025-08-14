@@ -143,28 +143,25 @@ public class Constants {
         AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
         double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
         double adjustY = Units.inchesToMeters(12); // Left and Right adjustment for the coral station tags
+        Transform2d fudgeFactorTransform = new Transform2d(0.0,0.0,Rotation2d.kZero);
 
         for(int tag = 12; tag < 14; tag++) {
           BLUE_CORAL_STATION_TAGS[tag - 12] = aprilTagLayout.getTagPose(tag).get().toPose2d();
 
           // Position 1 - Left //
-          BLUE_CORAL_STATION_LOCS[3*(tag - 12)] = new Pose2d(
-            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getX(),
-            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_CORAL_STATION_TAGS[tag - 12].getRotation().getDegrees()))
-            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          Transform2d leftTagTransform = new Transform2d(adjustX, adjustY, Rotation2d.kZero);
+          Pose2d leftRobotPose = BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(leftTagTransform);
+          BLUE_CORAL_STATION_LOCS[3*(tag - 12)] = leftRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
           // Position 2 - Middle //
-          BLUE_CORAL_STATION_LOCS[3*(tag - 12) + 1] = new Pose2d(
-            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getX(),
-            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_CORAL_STATION_TAGS[tag - 12].getRotation().getDegrees()))
-            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          Transform2d middleTagTransform = new Transform2d(adjustX, 0, Rotation2d.kZero);
+          Pose2d middleRobotPose = BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(middleTagTransform);
+          BLUE_CORAL_STATION_LOCS[3*(tag - 12) + 1] = middleRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
           // Position 3 - Right //
-          BLUE_CORAL_STATION_LOCS[3*(tag - 12) + 2] = new Pose2d(
-            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getX(),
-            BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_CORAL_STATION_TAGS[tag - 12].getRotation().getDegrees()))
-            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          Transform2d rightTagTransform = new Transform2d(adjustX, -adjustY, Rotation2d.kZero);
+          Pose2d rightRobotPose = BLUE_CORAL_STATION_TAGS[tag - 12].transformBy(rightTagTransform);          
+          BLUE_CORAL_STATION_LOCS[3*(tag - 12) + 2] = rightRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
         }
 
         // Initialize the red coral station locations //
@@ -190,30 +187,28 @@ public class Constants {
         AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
         double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
         double adjustY = Units.inchesToMeters(6.468); // Positive adjustment for Left and Negative for Right
+        Transform2d fudgeFactorTransform = new Transform2d(0.0,0.0,Rotation2d.kZero);
 
         // Get the blue reef tags from the layout //
         for(int tag = 17; tag < 23; tag++) {
           BLUE_REEF_TAGS[tag - 17] = aprilTagLayout.getTagPose(tag).get().toPose2d();
 
           // Get the rotation for the reef tag. Even (0, 2, 4, etc.) is left and odd (1, 3, 5) is right //
+
           // Left branch //
-          BLUE_REEF_BRANCHES[2*(tag - 17)] = new Pose2d(
-            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getX(),
-            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees() + 180))
-            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
-          // Right branch //
-          BLUE_REEF_BRANCHES[2*(tag - 17) + 1] = new Pose2d(
-            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getX(),
-            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees() + 180))
-            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          Transform2d leftTagTransform = new Transform2d(adjustX, adjustY, Rotation2d.kPi);
+          Pose2d leftRobotPose = BLUE_REEF_TAGS[tag - 17].transformBy(leftTagTransform);
+          BLUE_REEF_BRANCHES[2*(tag - 17)] = leftRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
           // Algae locations //
-          BLUE_REEF_ALGAE[tag - 17] = new Pose2d(
-            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getX(),
-            BLUE_REEF_TAGS[tag - 17].transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getY(),
-            Rotation2d.fromDegrees(BLUE_REEF_TAGS[tag - 17].getRotation().getDegrees() + 180))
-            .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+          Transform2d middleTagTransform = new Transform2d(adjustX, 0, Rotation2d.kPi);
+          Pose2d middleRobotPose = BLUE_REEF_TAGS[tag - 17].transformBy(middleTagTransform);
+          BLUE_REEF_ALGAE[tag - 17] = middleRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
+          // Right branch //
+          Transform2d rightTagTransform = new Transform2d(adjustX, -adjustY, Rotation2d.kPi);
+          Pose2d rightRobotPose = BLUE_REEF_TAGS[tag - 17].transformBy(rightTagTransform);
+          BLUE_REEF_BRANCHES[2*(tag - 17) + 1] = rightRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
         }
 
         // Initialize the red reef branches //
@@ -244,16 +239,15 @@ public class Constants {
         // Get the Apriltag layout //
         AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
         double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
+        Transform2d fudgeFactorTransform = new Transform2d(0.0,0.0,Rotation2d.kZero);
 
         // Initialize the blue tag //
         BLUE_PROCESSOR_TAG = aprilTagLayout.getTagPose(16).get().toPose2d();
         
         // Initialize the blue processor location //
-        BLUE_PROCESSOR_LOC = new Pose2d(
-          BLUE_PROCESSOR_TAG.transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getX(),
-          BLUE_PROCESSOR_TAG.transformBy(new Transform2d(adjustX, 0, Rotation2d.kZero)).getY(),
-          Rotation2d.fromDegrees(BLUE_PROCESSOR_TAG.getRotation().getDegrees() + 180))
-          .transformBy(new Transform2d(0.0,0.0,Rotation2d.kZero)); // Fudge Factor
+        Transform2d blueProcessorTagTransform = new Transform2d(adjustX, 0, Rotation2d.kPi);
+        Pose2d robotPose = BLUE_PROCESSOR_TAG.transformBy(blueProcessorTagTransform);
+        BLUE_PROCESSOR_LOC = robotPose.transformBy(fudgeFactorTransform); // Fudge Factor
 
         // Initialize the red tag based on the blue tag //
         RED_PROCESSOR_LOC = new Pose2d(
@@ -264,11 +258,81 @@ public class Constants {
     }
 
     public static class Barge {
+      public static final Pose2d BLUE_BARGE_TAG;
+      public static final Pose2d[] BLUE_BARGE_LOCS = new Pose2d[3];
+      public static final Pose2d[] RED_BARGE_LOCS = new Pose2d[3];
 
+      static {
+        AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
+        double adjustY = Units.inchesToMeters(44.177); // Left and Right adjustment for the coral station tags
+        Transform2d fudgeFactorTransform = new Transform2d(-0.5,0.0,Rotation2d.kZero);
+
+        // Initialize the blue barge tag //
+        BLUE_BARGE_TAG = aprilTagLayout.getTagPose(14).get().toPose2d();
+
+        // Position 1 - Left //
+        Transform2d leftTagTransform = new Transform2d(adjustX, adjustY, Rotation2d.kPi);
+        Pose2d leftRobotPose = BLUE_BARGE_TAG.transformBy(leftTagTransform);
+        BLUE_BARGE_LOCS[0] = leftRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
+        // Position 2 - Middle //
+        Transform2d middleTagTransform = new Transform2d(adjustX, 0, Rotation2d.kPi);
+        Pose2d middleRobotPose = BLUE_BARGE_TAG.transformBy(middleTagTransform);
+        BLUE_BARGE_LOCS[1] = middleRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
+        // Position 3 - Right //
+        Transform2d rightTagTransform = new Transform2d(adjustX, -adjustY, Rotation2d.kPi);
+        Pose2d rightRobotPose = BLUE_BARGE_TAG.transformBy(rightTagTransform);
+        BLUE_BARGE_LOCS[2] = rightRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
+        // Initialize the red coral station locations //
+        for(int loc = 0; loc < 3; loc++) {
+          RED_BARGE_LOCS[loc] = new Pose2d(
+            FIELD_LENGTH - BLUE_BARGE_LOCS[loc].getX(),
+            FIELD_WIDTH - BLUE_BARGE_LOCS[loc].getY(),
+            BLUE_BARGE_LOCS[loc].getRotation().rotateBy(Rotation2d.kPi));
+        }
+      }
     }
 
     public static class Cage {
+      public static final Pose2d BLUE_BARGE_TAG;
+      public static final Pose2d[] BLUE_CORAL_LOCS = new Pose2d[3];
+      public static final Pose2d[] RED_CORAL_LOCS = new Pose2d[3];
 
+      static {
+        AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        double adjustX = Units.inchesToMeters(17); // Center of robot + bumper
+        double adjustY = Units.inchesToMeters(44.177); // Left and Right adjustment for the coral station tags
+        Transform2d fudgeFactorTransform = new Transform2d(0.5,0.0,Rotation2d.kZero);
+
+        // Initialize the blue barge tag //
+        BLUE_BARGE_TAG = aprilTagLayout.getTagPose(14).get().toPose2d();
+
+        // Position 1 - Left //
+        Transform2d leftTagTransform = new Transform2d(adjustX, adjustY, Rotation2d.kPi);
+        Pose2d leftRobotPose = BLUE_BARGE_TAG.transformBy(leftTagTransform);
+        BLUE_CORAL_LOCS[0] = leftRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
+        // Position 2 - Middle //
+        Transform2d middleTagTransform = new Transform2d(adjustX, 0, Rotation2d.kPi);
+        Pose2d middleRobotPose = BLUE_BARGE_TAG.transformBy(middleTagTransform);
+        BLUE_CORAL_LOCS[1] = middleRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
+        // Position 3 - Right //
+        Transform2d rightTagTransform = new Transform2d(adjustX, -adjustY, Rotation2d.kPi);
+        Pose2d rightRobotPose = BLUE_BARGE_TAG.transformBy(rightTagTransform);
+        BLUE_CORAL_LOCS[2] = rightRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+
+        // Initialize the red coral station locations //
+        for(int loc = 0; loc < 3; loc++) {
+          RED_CORAL_LOCS[loc] = new Pose2d(
+            FIELD_LENGTH - BLUE_CORAL_LOCS[loc].getX(),
+            FIELD_WIDTH - BLUE_CORAL_LOCS[loc].getY(),
+            BLUE_CORAL_LOCS[loc].getRotation().rotateBy(Rotation2d.kPi));
+        }
+      }
     }
   }
 
@@ -429,7 +493,7 @@ public class Constants {
     public static final double SWERVE_DEADBAND = 0.1;
 
     // SWERVE MODULE ODOMETRY STANDARD DEVIATIONS //
-    public static final Matrix<N3, N1> ODOMETRY_STD = VecBuilder.fill(0.15, 0.15, Units.degreesToRadians(2.0));
+    public static final Matrix<N3, N1> ODOMETRY_STD = VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(15.0));
   }
 
   public static class OperatorConstants {
