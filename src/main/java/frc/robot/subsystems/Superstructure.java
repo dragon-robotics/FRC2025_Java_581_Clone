@@ -293,5 +293,46 @@ public class Superstructure {
 
     }, Set.of(m_swerve))
         .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
+  }
+
+  public Command DriveToClosestBargePoseCommand() {
+    return new DeferredCommand(() -> {
+      // Grab the robot's current alliance
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+
+      // Grab the robot's current pose
+      Pose2d currentPose = m_swerve.getState().Pose;
+
+      // Initialize the target poses based on the alliance and whether we are left or
+      // right //
+      Pose2d[] targetPoses = alliance.isPresent() && (alliance.get() == Alliance.Red)
+          ? FieldConstants.Barge.RED_BARGE_LOCS
+          : FieldConstants.Barge.BLUE_BARGE_LOCS;
+
+      // Calculate the pose closest to the current pose
+      Pose2d closestPose = calculateClosestPose(currentPose, targetPoses);
+
+      // Add intermediate waypoint (0.25 meter back from target)
+      Transform2d backwardOffset = new Transform2d(-1.0, 0.0, Rotation2d.kZero);
+
+      return
+        new DriveToPoseProfPID(
+            m_swerve,
+            m_applyRobotSpeeds,
+            closestPose.transformBy(backwardOffset),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(4.0, 8.0),
+            new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720)))
+        .andThen(
+            new DriveToPoseProfPID(
+                m_swerve,
+                m_applyRobotSpeeds,
+                closestPose,
+                new TrapezoidProfile.Constraints(1.0, 8.0),
+                new TrapezoidProfile.Constraints(1.0, 8.0),
+                new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720))));
+
+    }, Set.of(m_swerve))
+        .andThen(() -> currentHeading = Optional.of(m_swerve.getState().Pose.getRotation()));
   }  
 }
