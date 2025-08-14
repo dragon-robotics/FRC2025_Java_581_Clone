@@ -298,8 +298,8 @@ public class Constants {
 
     public static class Cage {
       public static final Pose2d BLUE_BARGE_TAG;
-      public static final Pose2d[] BLUE_CORAL_LOCS = new Pose2d[3];
-      public static final Pose2d[] RED_CORAL_LOCS = new Pose2d[3];
+      public static final Pose2d[] BLUE_CAGE_LOCS = new Pose2d[3];
+      public static final Pose2d[] RED_CAGE_LOCS = new Pose2d[3];
 
       static {
         AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
@@ -313,24 +313,24 @@ public class Constants {
         // Position 1 - Left //
         Transform2d leftTagTransform = new Transform2d(adjustX, adjustY, Rotation2d.kPi);
         Pose2d leftRobotPose = BLUE_BARGE_TAG.transformBy(leftTagTransform);
-        BLUE_CORAL_LOCS[0] = leftRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+        BLUE_CAGE_LOCS[0] = leftRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
 
         // Position 2 - Middle //
         Transform2d middleTagTransform = new Transform2d(adjustX, 0, Rotation2d.kPi);
         Pose2d middleRobotPose = BLUE_BARGE_TAG.transformBy(middleTagTransform);
-        BLUE_CORAL_LOCS[1] = middleRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+        BLUE_CAGE_LOCS[1] = middleRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
 
         // Position 3 - Right //
         Transform2d rightTagTransform = new Transform2d(adjustX, -adjustY, Rotation2d.kPi);
         Pose2d rightRobotPose = BLUE_BARGE_TAG.transformBy(rightTagTransform);
-        BLUE_CORAL_LOCS[2] = rightRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
+        BLUE_CAGE_LOCS[2] = rightRobotPose.transformBy(fudgeFactorTransform); // Fudge Factor
 
         // Initialize the red coral station locations //
         for(int loc = 0; loc < 3; loc++) {
-          RED_CORAL_LOCS[loc] = new Pose2d(
-            FIELD_LENGTH - BLUE_CORAL_LOCS[loc].getX(),
-            FIELD_WIDTH - BLUE_CORAL_LOCS[loc].getY(),
-            BLUE_CORAL_LOCS[loc].getRotation().rotateBy(Rotation2d.kPi));
+          RED_CAGE_LOCS[loc] = new Pose2d(
+            FIELD_LENGTH - BLUE_CAGE_LOCS[loc].getX(),
+            FIELD_WIDTH - BLUE_CAGE_LOCS[loc].getY(),
+            BLUE_CAGE_LOCS[loc].getRotation().rotateBy(Rotation2d.kPi));
         }
       }
     }
