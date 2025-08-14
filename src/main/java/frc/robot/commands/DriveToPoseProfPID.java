@@ -30,25 +30,23 @@ public class DriveToPoseProfPID extends Command {
   public DriveToPoseProfPID(
       CommandSwerveDrivetrain swerve,
       ApplyRobotSpeeds robotSpeeds,
-      Pose2d targetPose) {
+      Pose2d targetPose,
+      TrapezoidProfile.Constraints translationConstraints,
+      TrapezoidProfile.Constraints strafeConstraints,
+      TrapezoidProfile.Constraints rotationConstraints) {
     m_swerve = swerve;
     m_robotSpeeds = robotSpeeds;
     m_targetPose = targetPose;
 
     // Initialize the Profiled PID controllers
     m_translationController = new ProfiledPIDController(
-        4.0, 0.0, 0.0,
-        new TrapezoidProfile.Constraints(4.0, 8.0));
+        4.0, 0.0, 0.0, translationConstraints);
     // Initialize the Profiled PID controllers
     m_strafeController = new ProfiledPIDController(
-        4.0, 0.0, 0.0,
-        new TrapezoidProfile.Constraints(4.0, 8.0));
+        4.0, 0.0, 0.0, strafeConstraints);
     // Initialize the Profiled PID controllers
     m_rotationController = new ProfiledPIDController(
-        4.0, 0.0, 0.0,
-        new TrapezoidProfile.Constraints(
-            Units.degreesToRadians(540),
-            Units.degreesToRadians(720)));
+        4.0, 0.0, 0.0, rotationConstraints);
 
     m_translationController.setTolerance(0.01);
     m_strafeController.setTolerance(0.01);
