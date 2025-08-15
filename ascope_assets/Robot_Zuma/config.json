@@ -1,5 +1,21 @@
 {
+  "name": "Zuma",
   "cameras": [],
+  "rotations": [
+    {
+      "axis": "x",
+      "degrees": 90
+    },
+    {
+      "axis": "z",
+      "degrees": 270
+    }
+  ],
+  "position": [
+    0,
+    0,
+    0
+  ],  
   "components": [
     {
       "zeroedRotations": [
@@ -64,30 +80,14 @@
         },
         {
           "axis": "y",
-          "degrees": -34
+          "degrees": 0
         }
       ],
       "zeroedPosition": [
-        -0.14,
-        0,
-        -0.7
+        0.0,
+        0.0,
+        0.0
       ]
-    }
-  ],
-  "name": "Zuma",
-  "position": [
-    0,
-    0,
-    0
-  ],
-  "rotations": [
-    {
-      "axis": "x",
-      "degrees": 90
-    },
-    {
-      "axis": "z",
-      "degrees": 270
     }
   ]
 }

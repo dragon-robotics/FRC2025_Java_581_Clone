@@ -7,6 +7,7 @@ package frc.robot;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import dev.doglog.DogLog;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -85,5 +86,6 @@ public class Robot extends TimedRobot {
         "Simulation/CoralPoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
     DogLog.log(
         "Simulation/AlgaePoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    DogLog.log("Simulation/MechanismVisualizer", new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d(), new Pose3d()});
   }
 }
