@@ -8,7 +8,9 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.ironmaple.simulation.SimulatedArena;
@@ -87,5 +89,10 @@ public class Robot extends TimedRobot {
     DogLog.log(
         "Simulation/AlgaePoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
     DogLog.log("Simulation/MechanismVisualizer", new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d(), new Pose3d()});
+    DogLog.log("Simulation/MechanismAnimator", new Pose3d[] {
+      new Pose3d(0, 0, 0, new Rotation3d(0, 0, 0)),
+      new Pose3d(0, 0, 0, new Rotation3d(0, 0, 0)),
+      new Pose3d(0, 0, 0, new Rotation3d(Math.sin(Timer.getTimestamp()), 0, 0)),
+      new Pose3d(0, 0, 0, new Rotation3d(0, Math.cos(Timer.getTimestamp()), 0))});
   }
 }
