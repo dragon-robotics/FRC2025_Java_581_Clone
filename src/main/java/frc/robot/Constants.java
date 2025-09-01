@@ -507,7 +507,7 @@ public class Constants {
 
     // SWERVE MODULE ODOMETRY STANDARD DEVIATIONS //
     public static final Matrix<N3, N1> ODOMETRY_STD =
-        VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(15.0));
+        VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(5));
   }
 
   public static class OperatorConstants {
