@@ -217,6 +217,9 @@ public class VisionSubsystem extends SubsystemBase {
         // System.out.println("Linear StdDev: " + linearStdDev);
         // System.out.println("Angular StdDev: " + angularStdDev);
 
+        System.out.print("\rLinear StdDev: " + linearStdDev + " | Angular StdDev: " + angularStdDev + "    ");
+        System.out.flush();
+
         // Send vision observation
         m_consumer.accept(
             observation.pose().toPose2d(),
